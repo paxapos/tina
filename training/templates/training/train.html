@@ -1,0 +1,12 @@
+<h1>HOLASS TINA BOT</h1>
+
+
+{% if product_list %}
+    <ul>
+    {% for product in product_list %}
+        <li>{{ product.name }}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No hay productos.</p>
+{% endif %}
