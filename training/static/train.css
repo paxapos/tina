@@ -1,0 +1,51 @@
+:root {
+    font-family: sans-serif;
+}
+
+.btn {
+    border: none;
+    padding: 10px 15px;
+    text-align: center;
+    display: inline-block;
+    font-size: 14px;
+    border-radius: 5px;
+}
+
+.capture-input {
+    max-width: 100px;
+    font-size: 14px;
+    border: none;
+}
+
+.btn-primary {  
+    color: #fff;
+    background-color: #449d44;
+    border-color: #398439;
+}
+
+.btn-primary:hover {
+    background-color: #398439;
+}
+
+.btn-danger {
+    color: #fff;
+    background-color: #d9534f;
+    border-color: #d43f3a;
+}
+.btn-danger:hover {
+    background-color: #d43f3a;
+}
+
+button:disabled {
+    background-color: grey;
+}
+
+button:disabled:hover {
+    background-color: grey;
+    cursor: not-allowed;
+}
+
+select {
+    font-size: 16px;
+    border: none;
+}

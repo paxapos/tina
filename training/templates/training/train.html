@@ -1,12 +1,51 @@
-<h1>HOLASS TINA BOT</h1>
+<html>
 
-
-{% if product_list %}
-    <ul>
-    {% for product in product_list %}
-        <li>{{ product.name }}</li>
-    {% endfor %}
-    </ul>
-{% else %}
+<head>
+    <title>Training</title>
+    {% load static %}
+    <script type="text/javascript" src="{% static 'train.js' %}" defer></script>
+    <link rel="stylesheet" href="{% static 'train.css' %}">
+</head>
+<body id='main'>
+    <h1>PÁGINA DE ENTRENAMIENTO</h1>
+    <input class='capture-input' id='input-qty' type='number' placeholder='Qty'></input>
+    <input class='capture-input' id='input-delay' type='number' placeholder='Delay'></input>
+    <button class="btn" id="capture-button" onclick="onCapture()">Capturar</button>
+    <button class="btn btn-danger" id="remove-all-button" onclick="onRemove()">Borrar</button>
+    <br>
+    <br>
+    <br>
+    <form id="upload-form" action="{% url 'upload' %}" method="POST" role="form">
+    {% csrf_token %}
+    {% if product_list %}
+    <select id="select-products" onchange="drawInfo()">
+        <option value="">Seleccione producto...</option>
+        {% for product in product_list %}
+        <option value={{product.alias}}>{{ product.name }}</option>
+        {% endfor %}
+    </select>
+    {% else %}
     <p>No hay productos.</p>
-{% endif %}
+    {% endif %}
+    
+    {% if score_list %}
+    <select id="select-score" onchange="drawInfo()">
+        <option value="">Seleccione puntaje...</option>
+        {% for score in score_list %}
+        <option value={{score.number}}>{{ score.description }}</option>
+        {% endfor %}
+    </select>
+    {% else %}
+    <p>No hay productos.</p>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary" id="upload-button" disabled>Enviar Modelo</button>
+    </form>
+    <p id="info">...</p>
+    <div id='pictures-collection'>
+
+    </div>
+    
+</body>
+
+</html>

@@ -15,9 +15,14 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from training.views import train
+from training.views import train_admin, upload, train, capture, remove
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('train/', train),
+    path('', train_admin),
+    path('train_admin/', train_admin),
+    path('capture/', capture, name='capture'),
+    path('upload/', upload, name='upload'),
+    path('train/', train, name='train'),
+    path('remove/', remove, name='remove'),
 ]
