@@ -5,7 +5,7 @@
 __pycache__
 db.sqlite3
 media
-training/static/temp/*
+
 
 # Backup files #
 *.bak
