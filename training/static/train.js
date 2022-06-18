@@ -2,6 +2,7 @@ const selectProducts = document.getElementById("select-products");
 const selectScores = document.getElementById("select-score");
 const qtyInput = document.getElementById("input-qty");
 const delayInput = document.getElementById("input-delay");
+const captureButton = document.getElementById('capture-button')
 const info = document.getElementById("info");
 const picturesCollection = document.getElementById('pictures-collection');
 const infoEmpty = "Select product, score and at least one picture";
@@ -15,6 +16,7 @@ var selectedFileNames = [];
 
 const onCapture = () => {
     checkRemove('Esto eliminara las imágenes ya capturadas');
+    captureButton.disabled = true;
     capture()
     console.warn("Imagenes capturadas");
 }
@@ -26,7 +28,6 @@ const onRemove = () => {
 const onUpload = (e) => {
     e.preventDefault();
     upload();
-    clearImages();
 }
 
 const drawInfo = () => {
@@ -36,11 +37,13 @@ const drawInfo = () => {
         productAlias = selectProducts.value;
         scoreNumber = selectScores.value;
         info.innerHTML = `<b>Product:</b> ${productText}<br> <b>Score:</b> ${scoreText}`;
+        info.className = 'info-full';
         console.log(productAlias + '/' + scoreNumber);
         document.getElementById("upload-button").disabled = false;
     }
     else {
         info.textContent = infoEmpty;
+        info.className = 'info-empty';
         document.getElementById("upload-button").disabled = true;
     }
 };
@@ -67,7 +70,8 @@ const upload = () => {
         })
             .then(response => response.json())
             .then(data => {
-                console.log('Received data: ', data)
+                console.log('Received data: ', data);
+                clearImages();
             })
             .catch(error => {
                 console.error('Error:', error);
@@ -97,15 +101,29 @@ const capture = () => {
             console.log(data);
             fileNames = data['pics'];
             placePictures(fileNames);
+            captureButton.disabled = false
         })
-        .catch(error => console.error('Error:', error));
+        .catch(error => {
+            console.error('Error:', error);
+            captureButton.disabled = false
+        });
 }
 
 const placePictures = (pics) => {
     pics.forEach((pic) => {
+        const picDiv = document.createElement('div');
+        picDiv.className = 'picture-container'
         const picture = document.createElement('img');
+        const picCheckbox = document.createElement('input')
+        const checkboxLabel = document.createElement('label')
+        picCheckbox.type = 'checkbox';
+        picCheckbox.id = pic
         picture.src = 'static' + pic;
-        picturesCollection.appendChild(picture);
+        checkboxLabel.setAttribute('for', pic)
+        picDiv.appendChild(picCheckbox)
+        picDiv.appendChild(checkboxLabel)
+        checkboxLabel.appendChild(picture)
+        picturesCollection.appendChild(picDiv);
     });
     drawInfo();
 }
@@ -137,6 +155,7 @@ const clearImages = () => {
     picturesCollection.innerHTML = '';
     fileNames = [];
     selectedFileNames = [];
+    drawInfo();
     console.warn("Imagenes removidas");
 }
 

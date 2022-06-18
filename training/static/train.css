@@ -2,6 +2,28 @@
     font-family: sans-serif;
 }
 
+h1,
+h2,
+h3,
+h4 {
+    text-align: center;
+}
+
+.main-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.info-empty {
+    text-align: center;
+}
+
+.info-full {
+    text-align: left;
+    font-size: 1.2rem;
+}
+
 .btn {
     border: none;
     padding: 10px 15px;
@@ -9,6 +31,9 @@
     display: inline-block;
     font-size: 14px;
     border-radius: 5px;
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
 }
 
 .capture-input {
@@ -17,13 +42,19 @@
     border: none;
 }
 
-.btn-primary {  
+.btn-primary {
+    color: #fff;
+    background-color: #0d6efd;
+    border-color: #0d6efd;
+}
+
+.btn-success {
     color: #fff;
     background-color: #449d44;
     border-color: #398439;
 }
 
-.btn-primary:hover {
+.btn-success:hover {
     background-color: #398439;
 }
 
@@ -32,6 +63,7 @@
     background-color: #d9534f;
     border-color: #d43f3a;
 }
+
 .btn-danger:hover {
     background-color: #d43f3a;
 }
@@ -48,4 +80,91 @@ button:disabled:hover {
 select {
     font-size: 16px;
     border: none;
+}
+
+img {
+    max-height: 20rem;
+}
+
+.pictures-collection {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+}
+
+.picture-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 5px;
+    position: relative;
+}
+
+#form-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 600px;
+}
+
+#capture-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    width: 600px;
+}
+
+@media (max-width: 700px) {
+    img {
+        max-width: 100%;
+        max-height: fit-content;
+        border-radius: 10px;
+    }
+
+    #form-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-evenly;
+        width: 100%;
+    }
+
+    #form-container>* {
+        min-height: 30px;
+        font-size: 1.1rem;
+    }
+
+    #form-container>select {
+        height: 40px;
+        max-width: 48%;
+        border-radius: 8px;
+        margin: 0px 1px;
+        background-color: #26915b15;
+    }
+
+    #form-container>button {
+        margin: 20px 0px;
+        max-width: 90%;
+    }
+
+    #capture-container {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-around;
+        width: 100%;
+    }
+
+    #capture-container>* {
+        font-size: 1.1rem;
+    }
+
+    .capture-input {
+        width: 15%;
+        border: solid 1px rgba(21, 145, 161, 0.178);
+        border-radius: 10px;
+        text-align: center;
+    }
+
+    #capture-container>button {
+        width: 30%;
+    }   
 }
