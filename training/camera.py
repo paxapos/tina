@@ -17,8 +17,9 @@ def take_pictures(path, qty=1, delay=1):
         for i in range(qty):
             directory = path
             pictureName = f'/image{randint(0, 999999999)}.jpg'
+            data = picam2.capture_array()
             metadata = picam2.capture_file(str(directory) + pictureName)
-            #print(metadata)
+            print(data)
             files.append(pictureName)
             sleep(delay)
     except Exception as e:
