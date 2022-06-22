@@ -1,5 +1,11 @@
+
 class IaEngine:
-    def train():
+    def train(self):
+        print('Entrenando')
         pass
-    def predict():
+    def predict(self):
         pass
+
+
+engine = IaEngine()
+engine.train()
