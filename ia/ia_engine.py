@@ -7,7 +7,7 @@ class IaEngine:
 
 
 engine = IaEngine()
-#engine.train()
+engine.train()
 
 ######################################################################################################
 import os 
