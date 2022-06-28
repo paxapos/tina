@@ -1,15 +1,3 @@
-class IaEngine:
-    def train(self):
-       print('Entrenando')
-
-    def predict(self):
-        pass
-
-
-engine = IaEngine()
-engine.train()
-
-######################################################################################################
 import os 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
@@ -21,6 +9,20 @@ import scipy
 import numpy as np
 import random
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
+
+
+class IaEngine:
+    def train(self):
+       print('Entrenando')
+
+    def predict(self):
+        pass
+
+
+engine = IaEngine()
+engine.train()
+
+#####################################################################################################
 
 base_dir = 'Insert "pics" path' 
 train_dir = os.path.join(base_dir, 'train')
