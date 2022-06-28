@@ -10,11 +10,8 @@ import numpy as np
 import random
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 
-
 class IaEngine:
     def train(self):
-       print('Entrenando')
-      
        base_dir = 'c:/Users/fabbr/Tina/tina/training/pics' 
        train_dir = os.path.join(base_dir, 'train')
        validation_dir = os.path.join(base_dir, 'validation')
@@ -58,7 +55,7 @@ class IaEngine:
          img = mpimg.imread(img_path)
          plt.imshow(img)
 
-       plt.show()
+       # plt.show()
 
 
        # Our input feature map is 150x150x3: 150x150 for the image pixels, and 3 for
@@ -95,7 +92,7 @@ class IaEngine:
        # connected layer + sigmoid output layer
        model = Model(img_input, output)
 
-       model.summary()
+       # model.summary()
 
        model.compile(loss='binary_crossentropy',
               optimizer=RMSprop(learning_rate=0.001),
@@ -120,14 +117,15 @@ class IaEngine:
         target_size=(150, 150),
         batch_size=10,
         class_mode='binary')
-
+       print('Training...')
        history = model.fit(
-        train_generator,
-        steps_per_epoch=1,  # 40 images = batch_size * steps
-        epochs=4,
-        validation_data=validation_generator,
-        validation_steps=1,  # 10 images = batch_size * steps
-        verbose=2)
+       train_generator,
+       steps_per_epoch=1,  # 40 images = batch_size * steps
+       epochs=4,
+       validation_data=validation_generator,
+       validation_steps=1,  # 10 images = batch_size * steps
+       verbose=2)
+       print('Model Trained!')
 
        # Retrieve a list of accuracy results on training and validation data
        # sets for each training epoch
@@ -154,7 +152,7 @@ class IaEngine:
        plt.plot(epochs, val_loss)
        plt.title('Training and validation loss')
 
-       plt.show()
+       # plt.show()
     def predict(self):
         pass
 
