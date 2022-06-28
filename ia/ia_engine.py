@@ -12,7 +12,7 @@ from tensorflow.keras.preprocessing.image import img_to_array, load_img
 
 class IaEngine:
     def train(self):
-       base_dir = 'c:/Users/fabbr/Tina/tina/training/pics' 
+       base_dir = 'Insert "pics" path' 
        train_dir = os.path.join(base_dir, 'train')
        validation_dir = os.path.join(base_dir, 'validation')
 
