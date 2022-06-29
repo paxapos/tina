@@ -103,7 +103,7 @@ class IaEngine:
        train_datagen = ImageDataGenerator(rescale=1./255)
        val_datagen = ImageDataGenerator(rescale=1./255)
 
-       # Flow training images in batches of 20 using train_datagen generator
+       # Flow training images in batches of 10 using train_datagen generator
        train_generator = train_datagen.flow_from_directory(
         train_dir,  # This is the source directory for training images
         target_size=(150, 150),  # All images will be resized to 150x150
