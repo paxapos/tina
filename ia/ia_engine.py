@@ -120,10 +120,10 @@ class IaEngine:
        print('Training...')
        history = model.fit(
        train_generator,
-       steps_per_epoch=1,  # 40 images = batch_size * steps
-       epochs=4,
+       steps_per_epoch=4,  # 40 images = batch_size * steps
+       epochs=100,
        validation_data=validation_generator,
-       validation_steps=1,  # 10 images = batch_size * steps
+       validation_steps=4,  # 10 images = batch_size * steps
        verbose=2)
        print('Model Trained!')
 
