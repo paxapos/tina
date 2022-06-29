@@ -11,7 +11,7 @@ import random
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 
 class IaEngine:
-    def train(self):
+    def training(self):
        base_dir = 'Insert "pics" path' 
        train_dir = os.path.join(base_dir, 'training')
        validation_dir = os.path.join(base_dir, 'validation')
@@ -158,4 +158,4 @@ class IaEngine:
 
 
 engine = IaEngine()
-engine.train()
+engine.training()
