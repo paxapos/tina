@@ -6,11 +6,8 @@ from tensorflow.keras import layers
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import scipy
 import numpy as np
-import random
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from PIL import Image
 
 class IaEngine:
        
@@ -43,24 +40,24 @@ class IaEngine:
 
       # First convolution extracts 16 filters that are 3x3
       # Convolution is followed by max-pooling layer with a 2x2 window
-      x = layers.Conv2D(16, 3, activation='relu')(img_input)
+      x = layers.Conv2D(16, 3, activation='sigmoid')(img_input)
       x = layers.MaxPooling2D(2)(x)
 
       # Second convolution extracts 32 filters that are 3x3
       # Convolution is followed by max-pooling layer with a 2x2 window
-      x = layers.Conv2D(32, 3, activation='relu')(x)
+      x = layers.Conv2D(32, 3, activation='sigmoid')(x)
       x = layers.MaxPooling2D(2)(x)
  
       # Third convolution extracts 64 filters that are 3x3
       # Convolution is followed by max-pooling layer with a 2x2 window
-      x = layers.Conv2D(64, 3, activation='relu')(x)
+      x = layers.Conv2D(64, 3, activation='sigmoid')(x)
       x = layers.MaxPooling2D(2)(x)
 
       # Flatten feature map to a 1-dim tensor so we can add fully connected layers
       x = layers.Flatten()(x)
 
-      # Create a fully connected layer with ReLU activation and 512 hidden units
-      x = layers.Dense(512, activation='relu')(x)
+      # Create a fully connected layer with sigmoid activation and 512 hidden units
+      x = layers.Dense(512, activation='sigmoid')(x)
 
       # Create output layer with a single node and sigmoid activation
       output = layers.Dense(1, activation='sigmoid')(x)
@@ -79,7 +76,7 @@ class IaEngine:
    def training_(self):
       train_dir = self.imageReader_()
       validation_dir = self.imageReader_()
-      model =self.createModel_()
+      model = self.createModel_()
       # All images will be rescaled by 1./255
       train_datagen = ImageDataGenerator(rescale=1./255)
       val_datagen = ImageDataGenerator(rescale=1./255)
@@ -138,9 +135,11 @@ class IaEngine:
       plt.show()
 
 
-   def predict(self, img_input):
+   def predict(self, img):
       model = tensorflow.keras.models.load_model('tina/ia/model')
       model.summary()
-      img_input = Image.open(img_input)
+      img = load_img(img) 
+      img_input = img_to_array(img.resize((150, 150)))
+      print (img_input.shape)
       model.predict(img_input)
 
