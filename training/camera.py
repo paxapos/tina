@@ -1,7 +1,10 @@
 import logging
 from random import randint
 from time import sleep
-from picamera2 import Picamera2
+from tina.settings import CAMERA_MODULE
+
+if CAMERA_MODULE:
+    from picamera2 import Picamera2
 
 logger = logging.getLogger()
 

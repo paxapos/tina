@@ -144,10 +144,3 @@ class IaEngine:
       img_input = Image.open(img_input)
       model.predict(img_input)
 
-
-
-
-engine = IaEngine()
-
-#engine.training_()
-engine.predict('C:/Users/fabbr/Tina/tina/training/pics/training/burned/pic_01.jpg')
