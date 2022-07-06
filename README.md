@@ -14,3 +14,9 @@ git clone git@github.com:paxapos/tina.git
 pip install -r requirements.txt 
 
 copy /tina/settings.py.copy to /tina/settings.py and change SECRET_KEY 
+
+
+
+# Imagenes de entrenamienmto
+
+https://github.com/paxapos/tina/files/8983771/Milanesas.zip
