@@ -8,23 +8,25 @@ from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
+from tina.settings import BASE_DIR, TRAINED_PICS_FOLDER, MODEL_PATH
 
 class IaEngine:
        
-   def imageReader_ (self):
-      base_dir ='c:/Users/fabbr/Tina/tina/training/pics' 
+   def __imageReader (self, productName):
+      dirpath = str(BASE_DIR) + TRAINED_PICS_FOLDER
 
-      train_dir = os.path.join(base_dir, 'training')
+      # @TODO: read subfolder dirpath to get poroducts
+      train_dir = os.path.join(dirpath, productName)
 
-      validation_dir = os.path.join(base_dir, 'validation')
+      validation_dir = os.path.join(dirpath, 'validation')
        
-      train_raw_dir = os.path.join(train_dir, 'raw')
+      train_raw_dir = os.path.join(train_dir, '0')
 
-      train_burned_dir = os.path.join(train_dir, 'burned')
+      train_burned_dir = os.path.join(train_dir, '8')
 
-      validation_raw_dir = os.path.join(validation_dir, 'raw')
+      validation_raw_dir = os.path.join(validation_dir, '0')
 
-      validation_burned_dir = os.path.join(validation_dir, 'burned')
+      validation_burned_dir = os.path.join(validation_dir, '8')
 
       train_raw_fnames = os.listdir(train_raw_dir)
 
@@ -33,7 +35,7 @@ class IaEngine:
       return train_dir
       return validation_dir
     
-   def createModel_ (self):
+   def __createModel (self):
       # Our input feature map is 150x150x3: 150x150 for the image pixels, and 3 for
       # the three color channels: R, G, and B
       img_input = layers.Input(shape=(150, 150, 3))
@@ -73,39 +75,7 @@ class IaEngine:
         metrics=['acc'])
       return model 
 
-   def training_(self):
-      train_dir = self.imageReader_()
-      validation_dir = self.imageReader_()
-      model = self.createModel_()
-      # All images will be rescaled by 1./255
-      train_datagen = ImageDataGenerator(rescale=1./255)
-      val_datagen = ImageDataGenerator(rescale=1./255)
-
-     # Flow training images in batches of 10 using train_datagen generator
-      train_generator = train_datagen.flow_from_directory(
-      train_dir,  # This is the source directory for training images
-      target_size=(150, 150),  # All images will be resized to 150x150
-      batch_size=10,
-     # Since we use binary_crossentropy loss, we need binary labels
-      class_mode='binary')
-
-     # Flow validation images in batches of 10 using val_datagen generator
-      validation_generator = val_datagen.flow_from_directory(
-      validation_dir,
-      target_size=(150, 150),
-      batch_size=10,
-      class_mode='binary')
-      print('Training...')
-      history = model.fit(
-      train_generator,
-      steps_per_epoch=4,  # 40 images = batch_size * steps
-      epochs=100,
-      validation_data=validation_generator,
-      validation_steps=1,  # 10 images = batch_size * steps
-      verbose=2)
-      print('Model Trained!')
-      model.save('tina/ia/model')
-    
+   
    def accuracyGraph_ (self):
       # Retrieve a list of accuracy results on training and validation data
       # sets for each training epoch
@@ -135,11 +105,62 @@ class IaEngine:
       plt.show()
 
 
-   def predict(self, img):
-      model = tensorflow.keras.models.load_model('tina/ia/model')
+
+   def train(self, productName: str):
+      '''
+      This function is responsible for training and validation data
+
+      and create a new model in MODEL_PATH
+      '''
+      train_dir = self.__imageReader(productName)
+      validation_dir = self.__imageReader(productName)
+      model = self.__createModel()
+      # All images will be rescaled by 1./255
+      train_datagen = ImageDataGenerator(rescale=1./255)
+      val_datagen = ImageDataGenerator(rescale=1./255)
+
+     # Flow training images in batches of 10 using train_datagen generator
+      train_generator = train_datagen.flow_from_directory(
+      train_dir,  # This is the source directory for training images
+      target_size=(150, 150),  # All images will be resized to 150x150
+      batch_size=10,
+     # Since we use binary_crossentropy loss, we need binary labels
+      class_mode='binary')
+
+     # Flow validation images in batches of 10 using val_datagen generator
+      validation_generator = val_datagen.flow_from_directory(
+      validation_dir,
+      target_size=(150, 150),
+      batch_size=10,
+      class_mode='binary')
+      print('Training...')
+      history = model.fit(
+      train_generator,
+      steps_per_epoch=4,  # 40 images = batch_size * steps
+      epochs=100,
+      validation_data=validation_generator,
+      validation_steps=1,  # 10 images = batch_size * steps
+      verbose=2)
+      print('Model Trained!')
+      model.save(MODEL_PATH)
+    
+
+
+   def predict(self, img: str) -> integer :
+      """
+         Args:
+            img: path to image to predict
+
+         Returns:
+            Numpy array(s) of predictions. Based on Keras Model.predict
+      """
+      model = tensorflow.keras.models.load_model(MODEL_PATH)
       model.summary()
       img = load_img(img) 
       img_input = img_to_array(img.resize((150, 150)))
       print (img_input.shape)
-      model.predict(img_input)
+      narr = model.predict(img_input)
+
+      score = narr[0]
+      return score
 

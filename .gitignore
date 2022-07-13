@@ -6,6 +6,8 @@ __pycache__
 db.sqlite3
 media
 training/static/temp/*
+training/pics/*
+tina/ia/model/*
 
 # Backup files #
 *.bak
@@ -139,3 +141,4 @@ GitHub.sublime-settings
 
 
 tina/settings.py
+tina/ia/model/keras_metadata.pb
