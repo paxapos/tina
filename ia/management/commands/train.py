@@ -13,6 +13,6 @@ class Command(BaseCommand):
         engine = IaEngine()
 
         engine.training_()
-        prediction = engine.predict('C:/Users/fabbr/Tina/tina/training/pics/training/burned/pic_01.jpg')
+        prediction = engine.predict('Test_Pic')
 
         self.stdout.write(self.style.SUCCESS('PREDICTION ENDS "%s"' % prediction))
