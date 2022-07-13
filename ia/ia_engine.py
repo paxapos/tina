@@ -15,6 +15,7 @@ class IaEngine:
    def __imageReader (self, productName):
       dirpath = str(BASE_DIR) + TRAINED_PICS_FOLDER
 
+
       # @TODO: read subfolder dirpath to get poroducts
       train_dir = os.path.join(dirpath, productName)
 
