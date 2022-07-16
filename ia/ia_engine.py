@@ -12,7 +12,15 @@ from tina.settings import BASE_DIR, TRAINED_PICS_FOLDER, MODEL_PATH
 
 class IaEngine:
        
-   def __imageReader (self, productName):
+   def __imageReader (self, productName: str):
+      '''
+        Args:
+          productName: name of the product folder to read
+
+        Returns:
+          train an validation folders of each product
+      '''
+
       dirpath = str(BASE_DIR) + TRAINED_PICS_FOLDER
 
 
@@ -37,6 +45,11 @@ class IaEngine:
       return validation_dir
     
    def __createModel (self):
+      '''
+      This function creates the structure of the neural network
+      and returns the model
+      '''
+
       # Our input feature map is 150x150x3: 150x150 for the image pixels, and 3 for
       # the three color channels: R, G, and B
       img_input = layers.Input(shape=(150, 150, 3))
@@ -77,7 +90,13 @@ class IaEngine:
       return model 
 
    
-   def accuracyGraph_ (self):
+   def __accuracyGraph (self):
+      '''
+      This function generates a graphic of accuracy 
+      for training and validation data 
+      based on the amount of epochs 
+      '''
+
       # Retrieve a list of accuracy results on training and validation data
       # sets for each training epoch
       acc = history.history['acc']
@@ -109,13 +128,18 @@ class IaEngine:
 
    def train(self, productName: str):
       '''
-      This function is responsible for training and validation data
+      This function creates a model for each product, trains it based on
+      the training and validation data and saves it in MODEL_PATH
 
-      and create a new model in MODEL_PATH
+      Args:
+         productName: a string with the name of the product with which the model
+         will be created
       '''
+
       train_dir = self.__imageReader(productName)
       validation_dir = self.__imageReader(productName)
       model = self.__createModel()
+     
       # All images will be rescaled by 1./255
       train_datagen = ImageDataGenerator(rescale=1./255)
       val_datagen = ImageDataGenerator(rescale=1./255)
@@ -147,8 +171,10 @@ class IaEngine:
     
 
 
-   def predict(self, img: str) -> integer :
+   def predict(self, img: str):
       """
+      this function takes an image and sends it to the neural network model to  
+      return its score 
          Args:
             img: path to image to predict
 
@@ -164,4 +190,3 @@ class IaEngine:
 
       score = narr[0]
       return score
-
