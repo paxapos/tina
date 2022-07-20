@@ -130,7 +130,7 @@ class IaEngine:
       Args:
          productName: a string with the name of the product with which the model will be trained and saved
       '''
-
+      print(productName)
       train_dir = self.__imageReader(productName)
       validation_dir = self.__imageReader(productName)
       model = self.__createModel()
@@ -157,12 +157,12 @@ class IaEngine:
       history = model.fit(
       train_generator,
       steps_per_epoch=4,  # 40 images = batch_size * steps
-      epochs=100,
+      epochs=10,
       validation_data=validation_generator,
       validation_steps=1,  # 10 images = batch_size * steps
       verbose=2)
       print('Model Trained!')
-      model.save(MODEL_PATH / productName)
+      model.save(MODEL_PATH +"/"+ productName)
 
    def predict(self, img: str, product: str):
       """
