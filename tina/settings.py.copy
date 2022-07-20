@@ -14,19 +14,17 @@ from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
-# Path = Path("tina/training/pics")
-# Test_Pic = Path("tina/training/pics/Milanesas/0/pic_01.jpg")
 
+MODEL_PATH = 'ia/model'
 
-
-TRAINED_PICS_FOLDER = "training/pics"
+TRAINING_PICS_FOLDER = 'training/pics'
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-ql+bal_34#d@dd5#yw@xjg0mz0*ix$u$8dv4g6r9yiz-3ab(k*'
+SECRET_KEY = 'asd346456TSAET$%&#!'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
