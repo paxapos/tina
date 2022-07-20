@@ -2,13 +2,15 @@ import tensorflow
 import os 
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from pathlib import Path
 from tensorflow.keras import layers
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from tina.settings import BASE_DIR, TRAINED_PICS_FOLDER, MODEL_PATH
+from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH
+
 
 class IaEngine:
        
@@ -21,14 +23,12 @@ class IaEngine:
           train an validation folders of each product
       '''
 
-      dirpath = str(BASE_DIR) + TRAINED_PICS_FOLDER
+      dirpath = BASE_DIR / TRAINING_PICS_FOLDER
 
+      train_dir = os.path.join(dirpath, productName, 'train')
 
-      # @TODO: read subfolder dirpath to get poroducts
-      train_dir = os.path.join(dirpath, productName)
-
-      validation_dir = os.path.join(dirpath, 'validation')
-       
+      validation_dir = os.path.join(dirpath, productName, 'validation')
+      
       train_raw_dir = os.path.join(train_dir, '0')
 
       train_burned_dir = os.path.join(train_dir, '8')
@@ -36,10 +36,6 @@ class IaEngine:
       validation_raw_dir = os.path.join(validation_dir, '0')
 
       validation_burned_dir = os.path.join(validation_dir, '8')
-
-      train_raw_fnames = os.listdir(train_raw_dir)
-
-      train_burned_fnames = os.listdir(train_burned_dir)
 
       return train_dir
       return validation_dir
@@ -129,11 +125,10 @@ class IaEngine:
    def train(self, productName: str):
       '''
       This function creates a model for each product, trains it based on
-      the training and validation data and saves it in MODEL_PATH
+      the training and validation data and saves it in MODEL_PATH/productName
 
       Args:
-         productName: a string with the name of the product with which the model
-         will be created
+         productName: a string with the name of the product with which the model will be trained and saved
       '''
 
       train_dir = self.__imageReader(productName)
@@ -167,26 +162,23 @@ class IaEngine:
       validation_steps=1,  # 10 images = batch_size * steps
       verbose=2)
       print('Model Trained!')
-      model.save(MODEL_PATH)
-    
+      model.save(MODEL_PATH / productName)
 
-
-   def predict(self, img: str):
+   def predict(self, img: str, product: str):
       """
-      this function takes an image and sends it to the neural network model to  
-      return its score 
+      this function takes an image and sends it to the neural network model corresponding to the product to return its score
          Args:
             img: path to image to predict
-
+            product: type of product to predict 
          Returns:
             Numpy array(s) of predictions. Based on Keras Model.predict
       """
-      model = tensorflow.keras.models.load_model(MODEL_PATH)
-      model.summary()
+
+      model = tensorflow.keras.models.load_model(MODEL_PATH / product)
       img = load_img(img) 
       img_input = img_to_array(img.resize((150, 150)))
-      print (img_input.shape)
-      narr = model.predict(img_input)
+      array = model.predict(img_input)
+      score = array[0]
 
-      score = narr[0]
       return score
+
