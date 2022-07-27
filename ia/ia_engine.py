@@ -9,7 +9,7 @@ from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH
+from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY
 
 
 class IaEngine:
@@ -83,43 +83,7 @@ class IaEngine:
       model.compile(loss='binary_crossentropy',
         optimizer=RMSprop(learning_rate=0.001),
         metrics=['acc'])
-      return model 
-
-   
-   def __accuracyGraph (self):
-      '''
-      This function generates a graphic of accuracy 
-      for training and validation data 
-      based on the amount of epochs 
-      '''
-
-      # Retrieve a list of accuracy results on training and validation data
-      # sets for each training epoch
-      acc = history.history['acc']
-      val_acc = history.history['val_acc']
-
-      # Retrieve a list of list results on training and validation data
-      # sets for each training epoch
-      loss = history.history['loss']
-      val_loss = history.history['val_loss']
-
-      # Get number of epochs
-      epochs = range(len(acc))
-
-      # Plot training and validation accuracy per epoch
-      plt.plot(epochs, acc)
-      plt.plot(epochs, val_acc)
-      plt.title('Training and validation accuracy')
-
-      plt.figure()
-
-     # Plot training and validation loss per epoch
-      plt.plot(epochs, loss)
-      plt.plot(epochs, val_loss)
-      plt.title('Training and validation loss')
-
-      plt.show()
-
+      return model
 
 
    def train(self, productName: str):
@@ -157,7 +121,7 @@ class IaEngine:
       history = model.fit(
       train_generator,
       steps_per_epoch=4,  # 40 images = batch_size * steps
-      epochs=10,
+      epochs=EPOCHS_QUANTITY,
       validation_data=validation_generator,
       validation_steps=1,  # 10 images = batch_size * steps
       verbose=2)
@@ -181,4 +145,38 @@ class IaEngine:
       score = array[0]
 
       return score
+
+   def __accuracyGraph (self):
+      '''
+      This function generates a graphic of accuracy 
+      for training and validation data 
+      based on the amount of epochs 
+      '''
+
+      # Retrieve a list of accuracy results on training and validation data
+      # sets for each training epoch
+      acc = history.history['acc']
+      val_acc = history.history['val_acc']
+
+      # Retrieve a list of list results on training and validation data
+      # sets for each training epoch
+      loss = history.history['loss']
+      val_loss = history.history['val_loss']
+
+      # Get number of epochs
+      epochs = range(len(acc))
+
+      # Plot training and validation accuracy per epoch
+      plt.plot(epochs, acc)
+      plt.plot(epochs, val_acc)
+      plt.title('Training and validation accuracy')
+
+      plt.figure()
+
+     # Plot training and validation loss per epoch
+      plt.plot(epochs, loss)
+      plt.plot(epochs, val_loss)
+      plt.title('Training and validation loss')
+
+      plt.show()
 

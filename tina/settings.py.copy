@@ -19,6 +19,7 @@ MODEL_PATH = 'ia/model'
 
 TRAINING_PICS_FOLDER = 'training/pics'
 
+EPOCHS_QUANTITY = 100
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
