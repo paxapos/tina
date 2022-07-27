@@ -15,6 +15,9 @@ pip install -r requirements.txt
 
 copy /tina/settings.py.copy to /tina/settings.py and change SECRET_KEY 
 
+test that is correct working
+python manage.py runserver
+
 
 
 # Imagenes de entrenamienmto
