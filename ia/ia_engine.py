@@ -10,7 +10,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY
-
+import cv2
 
 class IaEngine:
        
@@ -18,7 +18,6 @@ class IaEngine:
       '''
         Args:
           productName: name of the product folder to read
-
         Returns:
           train an validation folders of each product
       '''
@@ -46,9 +45,9 @@ class IaEngine:
       and returns the model
       '''
 
-      # Our input feature map is 150x150x3: 150x150 for the image pixels, and 3 for
+      # Our input feature map is 281x199x3: 281x199 for the image pixels, and 3 for
       # the three color channels: R, G, and B
-      img_input = layers.Input(shape=(150, 150, 3))
+      img_input = layers.Input(shape=(281, 199, 3))
 
       # First convolution extracts 16 filters that are 3x3
       # Convolution is followed by max-pooling layer with a 2x2 window
@@ -90,7 +89,6 @@ class IaEngine:
       '''
       This function creates a model for each product, trains it based on
       the training and validation data and saves it in MODEL_PATH/productName
-
       Args:
          productName: a string with the name of the product with which the model will be trained and saved
       '''
@@ -106,7 +104,7 @@ class IaEngine:
      # Flow training images in batches of 10 using train_datagen generator
       train_generator = train_datagen.flow_from_directory(
       train_dir,  # This is the source directory for training images
-      target_size=(150, 150),  # All images will be resized to 150x150
+      target_size=(281, 199),  # All images will be resized to 199x281
       batch_size=10,
      # Since we use binary_crossentropy loss, we need binary labels
       class_mode='binary')
@@ -114,7 +112,7 @@ class IaEngine:
      # Flow validation images in batches of 10 using val_datagen generator
       validation_generator = val_datagen.flow_from_directory(
       validation_dir,
-      target_size=(150, 150),
+      target_size=(281, 199),
       batch_size=10,
       class_mode='binary')
       print('Training...')
@@ -126,24 +124,25 @@ class IaEngine:
       validation_steps=1,  # 10 images = batch_size * steps
       verbose=2)
       print('Model Trained!')
-      model.save(MODEL_PATH +"/"+ productName)
+      model.save(MODEL_PATH +"/"+ productName + ".h5")
 
-   def predict(self, img: str, product: str):
+   def predict(self, product: str, img: str):
       """
       this function takes an image and sends it to the neural network model corresponding to the product to return its score
          Args:
-            img: path to image to predict
             product: type of product to predict 
+            img: path to image to predict
+
          Returns:
             Numpy array(s) of predictions. Based on Keras Model.predict
       """
 
-      model = tensorflow.keras.models.load_model(MODEL_PATH / product)
-      img = load_img(img) 
-      img_input = img_to_array(img.resize((150, 150)))
-      array = model.predict(img_input)
+      model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
+      image = cv2.imread(img) 
+      input_array = np.array(np.expand_dims(image, axis=0))
+      array = model.predict(input_array)
       score = array[0]
-
+      print(score)
       return score
 
    def __accuracyGraph (self):
@@ -179,4 +178,3 @@ class IaEngine:
       plt.title('Training and validation loss')
 
       plt.show()
-
