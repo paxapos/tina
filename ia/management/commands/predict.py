@@ -3,16 +3,16 @@ from ia.ia_engine import IaEngine
 
 class Command(BaseCommand):
 
-    help = 'Admin IA predictions'
+    help = 'Admin IA traininig models'
 
     def add_arguments(self, parser):
-        pass
+
+        parser.add_argument('productName', nargs=1, type=str)
 
 
     def handle(self, *args, **options):
-        pass
+        
+        engine = IaEngine()
+        ret = engine.train(options['productName'][0])
 
-    
-
-
-
+        self.stdout.write(self.style.SUCCESS('Successfully closed train "%s"' % ret))
