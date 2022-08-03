@@ -1,5 +1,9 @@
 import tensorflow
 import os 
+import random
+import shutil
+import cv2
+from os import listdir
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from pathlib import Path
@@ -9,8 +13,10 @@ from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY
-import cv2
+from PIL import Image as PImage
+from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY, VALIDATION_PERCENTAGE
+
+
 
 class IaEngine:
        
@@ -84,6 +90,27 @@ class IaEngine:
         metrics=['acc'])
       return model
 
+   def imageSorter__(self, path: str, productName: str):
+      '''
+      @TODO: write proper documentation for imageSorter__ function
+      '''
+
+      imgs = os.listdir(path)
+      cantImgs = len(imgs)
+      percentage = cantImgs * VALIDATION_PERCENTAGE / 100
+      validationImages = []
+      trainImages = imgs
+      counter = 0
+
+      while (counter < percentage):
+         randomImage = random.choice(imgs)
+         validationImages.append(randomImage)
+         trainImages.remove(randomImage)
+         shutil.move(path + "/" + randomImage, "training/pics/" + productName + "/validation")
+         counter += 1
+       
+      for image in trainImages:
+         shutil.move(path + "/" + image, "training/pics/" + productName + "/train")
 
    def train(self, productName: str):
       '''
@@ -92,6 +119,7 @@ class IaEngine:
       Args:
          productName: a string with the name of the product with which the model will be trained and saved
       '''
+
       print(productName)
       train_dir = self.__imageReader(productName)
       validation_dir = self.__imageReader(productName)
