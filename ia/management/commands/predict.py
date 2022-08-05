@@ -15,6 +15,6 @@ class Command(BaseCommand):
     def handle(self,*args,** options):
 
         engine = IaEngine()
-        ret=engine.predict(options['product'][0],['img'][0])
+        ret=engine.predict(options['product'][0],options['img'][0])
 
         self.stdout.write(self.style.SUCCESS('Successfully closed predict"%s"'%ret))
