@@ -17,7 +17,6 @@ from PIL import Image as PImage
 from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY, VALIDATION_PERCENTAGE
 
 
-
 class IaEngine:
        
    def __imageReader (self, productName: str):
@@ -31,20 +30,11 @@ class IaEngine:
       dirpath = BASE_DIR / TRAINING_PICS_FOLDER
 
       train_dir = os.path.join(dirpath, productName, 'train')
-
       validation_dir = os.path.join(dirpath, productName, 'validation')
       
-      train_raw_dir = os.path.join(train_dir, '0')
-
-      train_burned_dir = os.path.join(train_dir, '8')
-
-      validation_raw_dir = os.path.join(validation_dir, '0')
-
-      validation_burned_dir = os.path.join(validation_dir, '8')
-
-      return train_dir
-      return validation_dir
+      return train_dir, validation_dir
     
+  
    def __createModel (self):
       '''
       This function creates the structure of the neural network
@@ -108,7 +98,6 @@ class IaEngine:
          trainImages.remove(randomImage)
          shutil.move(path + "/" + randomImage, "training/pics/" + productName + "/validation")
          counter += 1
-       
       for image in trainImages:
          shutil.move(path + "/" + image, "training/pics/" + productName + "/train")
 
@@ -120,9 +109,7 @@ class IaEngine:
          productName: a string with the name of the product with which the model will be trained and saved
       '''
 
-      print(productName)
-      train_dir = self.__imageReader(productName)
-      validation_dir = self.__imageReader(productName)
+      train_dir, validation_dir = self.__imageReader(productName)
       model = self.__createModel()
      
       # All images will be rescaled by 1./255
@@ -143,6 +130,7 @@ class IaEngine:
       target_size=(281, 199),
       batch_size=10,
       class_mode='binary')
+
       print('Training...')
       history = model.fit(
       train_generator,
@@ -152,6 +140,7 @@ class IaEngine:
       validation_steps=1,  # 10 images = batch_size * steps
       verbose=2)
       print('Model Trained!')
+
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
    def predict(self, product: str, img: str):
@@ -166,12 +155,11 @@ class IaEngine:
       """
 
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
-      image = cv2.imread(img) 
+      image = cv2.imread(img)
       input_array = np.array(np.expand_dims(image, axis=0))
       array = model.predict(input_array)
-      score = array[0]
-      print(score)
-      return score
+      #score = array[0]
+      return array
 
    def __accuracyGraph (self):
       '''
