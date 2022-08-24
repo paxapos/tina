@@ -8,12 +8,12 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from os import listdir
 from pathlib import Path
-from tensorflow.keras import layers
+from tensorflow.keras import layers, regularizers
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D
+from tensorflow.keras.layers import Conv2D, BatchNormalization, MaxPooling2D, Dropout
 from tensorflow.keras.layers import Activation
 from tensorflow.keras.layers import Flatten
 from tensorflow.keras.layers import Dense
@@ -57,6 +57,7 @@ class IaEngine:
       model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
       model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
       model.add(MaxPooling2D(2))
+
       model.add(Flatten())
       model.add(Dense(4096, activation='relu'))
       model.add(Dropout(0.5))
@@ -64,7 +65,7 @@ class IaEngine:
       model.add(Dropout(0.5))
       model.add(Dense(4096, activation='relu'))
       model.add(Dropout(0.5))
-      model.add(Dense(10, activation='softmax'))
+      model.add(Dense(10, activation='softmax', kernel_regularizer=regularizers.l2(0.001)))
 
       model.compile(
          optimizer='adam',
@@ -131,6 +132,8 @@ class IaEngine:
       verbose=2)
       print('Model Trained!')
 
+      self.__accuracyGraph(history)
+
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
    def predict(self, product: str, img: str):
@@ -150,7 +153,7 @@ class IaEngine:
       array = model.predict(input_array)
       return array
 
-   def __accuracyGraph (self):
+   def __accuracyGraph (self, history):
       '''
       This function generates a graphic of accuracy 
       for training and validation data 
