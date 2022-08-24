@@ -96,6 +96,31 @@ class IaEngine:
       for image in trainImages:
          shutil.move(path + "/" + image, "training/pics/" + productName + "/train")
 
+   def visualize_conv_layer(self, layer_name):
+      model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ "Milanesas" +".h5")
+      model.layers[0]._name='conv_0'
+      layer_output=model.get_layer(layer_name).output
+      
+      intermediate_model=tensorflow.keras.models.Model(inputs=model.input,outputs=layer_output)
+      image = cv2.imread("training/pics/Milanesas/train/0/pic_01.jpg")
+      input_array = np.array(np.expand_dims(image, axis=0))
+      intermediate_prediction=intermediate_model.predict(input_array)
+   
+      row_size=4
+      col_size=8
+      
+      img_index=0
+
+      print(np.shape(intermediate_prediction))
+      
+      fig,ax=plt.subplots(row_size,col_size,figsize=(10,8))
+
+      for row in range(0,row_size):
+         for col in range(0,col_size):
+            ax[row][col].imshow(intermediate_prediction[0, :, :, img_index])
+
+            img_index=img_index+1
+      plt.show()
    def train(self, productName: str):
       '''
       This function creates a model for each product, trains it based on
@@ -136,9 +161,9 @@ class IaEngine:
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
 
-      self.__accuracyGraph(history)
+      #self.__accuracyGraph(history)
       self.visualize_conv_layer('conv_0')
-
+      plt.show()
 
    def predict(self, product: str, img: str):
       """
@@ -163,22 +188,22 @@ class IaEngine:
       for training and validation data 
       based on the amount of epochs 
       '''
-      acc = history.history['acc']
-      val_acc = history.history['val_acc']
+      acc = history.history['accuracy']
+      
 
       loss = history.history['loss']
-      val_loss = history.history['val_loss']
+      
 
       epochs = range(len(acc))
 
       plt.plot(epochs, acc)
-      plt.plot(epochs, val_acc)
+      
       plt.title('Training and validation accuracy')
 
       plt.figure()
 
       plt.plot(epochs, loss)
-      plt.plot(epochs, val_loss)
+      
       plt.title('Training and validation loss')
 
       plt.show()
@@ -251,27 +276,3 @@ class IaEngine:
             print(r, g, b)
             hsv = self.rgb_to_hsv(r, g, b)
             print(hsv)
-
-def visualize_conv_layer(layer_name):
-  model.layers[0]._name='conv_0'
-  layer_output=model.get_layer(layer_name).output
-
-  intermediate_model=tensorflow.keras.models.Model(inputs=model.input,outputs=layer_output)
-
-  intermediate_prediction=intermediate_model.predict(input_array)
-  
-  row_size=4
-  col_size=8
-  
-  img_index=0
-
-  print(np.shape(intermediate_prediction))
-  
-  fig,ax=plt.subplots(row_size,col_size,figsize=(10,8))
-
-  for row in range(0,row_size):
-    for col in range(0,col_size):
-      ax[row][col].imshow(intermediate_prediction[0, :, :, img_index])
-
-      img_index=img_index+1
-
