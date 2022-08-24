@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 from os import listdir
 from pathlib import Path
-from tensorflow.keras import layers, regularizers
+from tensorflow.keras import layers, regularizers, callbacks
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import RMSprop
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -148,16 +148,19 @@ class IaEngine:
       class_mode='categorical')
 
       print('Training...')
+      tensorboard_callback = callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+
+
       history = model.fit(
       train_generator,
       steps_per_epoch=4,
+      callbacks=[tensorboard_callback],
       epochs=EPOCHS_QUANTITY,
       validation_data=validation_generator,
       validation_steps=1,
       verbose=2)
       print('Model Trained!')
 
-      model.summary()
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
 
