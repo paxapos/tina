@@ -244,3 +244,28 @@ class IaEngine:
             print(r, g, b)
             hsv = self.rgb_to_hsv(r, g, b)
             print(hsv)
+def visualize_conv_layer(layer_name):
+  
+  layer_output=model.get_layer(layer_name).output
+
+  intermediate_model=tensorflow.keras.models.Model(inputs=model.input,outputs=layer_output)
+
+  intermediate_prediction=intermediate_model.predict(input_array)
+  
+  row_size=4
+  col_size=8
+  
+  img_index=0
+
+  print(np.shape(intermediate_prediction))
+  
+  fig,ax=plt.subplots(row_size,col_size,figsize=(10,8))
+
+  for row in range(0,row_size):
+    for col in range(0,col_size):
+      ax[row][col].imshow(intermediate_prediction[0, :, :, img_index])
+
+      img_index=img_index+1
+
+visualize_conv_layer('conv_0')
+plt.show()
