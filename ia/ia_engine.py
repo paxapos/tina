@@ -132,9 +132,13 @@ class IaEngine:
       verbose=2)
       print('Model Trained!')
 
-      self.__accuracyGraph(history)
 
       model.save(MODEL_PATH +"/"+ productName + ".h5")
+
+
+      self.__accuracyGraph(history)
+      self.visualize_conv_layer('conv_0')
+
 
    def predict(self, product: str, img: str):
       """
@@ -270,5 +274,3 @@ def visualize_conv_layer(layer_name):
 
       img_index=img_index+1
 
-visualize_conv_layer('conv_0')
-plt.show()
