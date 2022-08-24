@@ -47,13 +47,24 @@ class IaEngine:
 
       model = Sequential()
       inputShape = (281, 199, 3)
-
-      model.add(Conv2D(32, (3, 3), padding="same",
-	      input_shape=inputShape))
-      model.add(Activation("relu"))
+      model.add(Conv2D(32, (3, 3), input_shape=inputShape, padding = "same", activation='relu'))
+      model.add(BatchNormalization())
+      model.add(MaxPooling2D(2))
+      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
+      model.add(BatchNormalization())
+      model.add(MaxPooling2D(2))
+      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
+      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
+      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
+      model.add(MaxPooling2D(2))
       model.add(Flatten())
-      model.add(Dense(10))
-      model.add(Activation("softmax"))
+      model.add(Dense(4096, activation='relu'))
+      model.add(Dropout(0.5))
+      model.add(Dense(4096, activation='relu'))
+      model.add(Dropout(0.5))
+      model.add(Dense(4096, activation='relu'))
+      model.add(Dropout(0.5))
+      model.add(Dense(10, activation='softmax'))
 
       model.compile(
          optimizer='adam',
@@ -63,7 +74,7 @@ class IaEngine:
       return model
 
 
-   def imageSorter__(self, path: str, productName: str):
+   def __imageSorter(self, path: str, productName: str):
       '''
       @TODO: write proper documentation for imageSorter__ function
       '''
@@ -164,3 +175,72 @@ class IaEngine:
       plt.title('Training and validation loss')
 
       plt.show()
+
+   def __imageblur(self, imgpath, number, name):
+      name = name
+      img = cv2.imread(imgpath)
+      kernelsize = [64, 64]
+      c = 0
+      resultimage = cv2.blur(img, (kernelsize))
+      while c < 15:
+         resultimage = cv2.blur(resultimage, (kernelsize))
+         c += 1
+      filename = "pics/Milanesas/new_validation/" + number + "/" + name
+      print(filename)
+      cv2.imwrite(filename, resultimage)
+
+   def __rgb_to_hsv(self, r, g, b):
+      r, g, b = r/255.0, g/255.0, b/255.0
+      mx = max(r, g, b)
+      mn = min(r, g, b)
+      df = mx-mn
+      if mx == mn:
+         h = 0
+      elif mx == r:
+         h = (60 * ((g-b)/df) + 360) % 360
+      elif mx == g:
+         h = (60 * ((b-r)/df) + 120) % 360
+      elif mx == b:
+         h = (60 * ((r-g)/df) + 240) % 360
+      if mx == 0:
+         s = 0
+      else:
+         s = (df/mx)*100
+      v = mx*100
+      return h, s, v
+
+   def __image_rgb(self):
+      new_validation_dir = os.path.join(TRAINING_PICS_FOLDER, "Milanesas", "new_validation")
+      a = os.listdir(new_validation_dir)
+      for x in a:
+         dirpath = new_validation_dir + "/" + x
+         c = os.listdir(dirpath)
+         number = x
+         for image in c:
+            imagepath = dirpath + "/" + image
+            image = cv2.imread(imagepath)
+            chans = cv2.split(image)
+            colors = ('b', 'g', 'r')
+            features = []
+            feature_data = []
+            counter = 0
+            for (chan, color) in zip(chans, colors):
+                    counter += 1
+                    hist = cv2.calcHist([chan], [0], None, [256], [0, 256])
+                    features.extend(hist)
+                    elem = np.argmax(hist)
+
+                    if counter == 1:
+                        blue = int(elem)
+                    elif counter == 2:
+                        green = int(elem)
+                    elif counter == 3:
+                        red = int(elem)
+                        feature_data = [red, green, blue]
+
+            r = feature_data[0]
+            g = feature_data[1]
+            b = feature_data[2]
+            print(r, g, b)
+            hsv = self.rgb_to_hsv(r, g, b)
+            print(hsv)
