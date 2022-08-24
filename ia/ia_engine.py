@@ -132,7 +132,7 @@ class IaEngine:
       verbose=2)
       print('Model Trained!')
 
-
+      model.summary()
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
 
@@ -251,8 +251,9 @@ class IaEngine:
             print(r, g, b)
             hsv = self.rgb_to_hsv(r, g, b)
             print(hsv)
+
 def visualize_conv_layer(layer_name):
-  
+  model.layers[0]._name='conv_0'
   layer_output=model.get_layer(layer_name).output
 
   intermediate_model=tensorflow.keras.models.Model(inputs=model.input,outputs=layer_output)
