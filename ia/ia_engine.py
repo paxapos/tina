@@ -12,7 +12,7 @@ from keras.models import Sequential,Model,load_model
 from keras.optimizers import SGD
 from keras.layers import BatchNormalization, Lambda, Input, Dense, Convolution2D, MaxPooling2D, AveragePooling2D, ZeroPadding2D, Dropout, Flatten, Reshape, Activation, Concatenate
 from keras.preprocessing.image import ImageDataGenerator
-from keras.callbacks import ModelCheckpoint
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
 from PIL import Image as PImage
@@ -139,8 +139,8 @@ class IaEngine:
       output = Dense(units=10, activation='softmax')(FC_2)
       
       model = Model(inputs=input_image,outputs=output)
-      sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
-      # sgd = SGD(lr=0.01, momentum=0.9, decay=0.0005, nesterov=True)
+      #sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+      sgd = SGD(lr=0.01, momentum=0.9, decay=0.0005, nesterov=True)
       model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
       return model
 
@@ -202,8 +202,9 @@ class IaEngine:
       train_dir, validation_dir = self.__imageReader(productName)
       model = self.__createModel()
    
-      filepath = productName + '.hdf5'
-      checkpoint = ModelCheckpoint(filepath, monitor='val_acc', verbose=1, save_best_only=True, mode='max')
+      filepath = (MODEL_PATH +"/"+ productName + ".h5")
+      checkpoint = ModelCheckpoint(filepath, monitor='accuracy', verbose=1, save_best_only=True, mode='max')
+      callback = EarlyStopping(monitor='accuracy', baseline=0.45, patience=5)
       callbacks_list = [checkpoint]
 
       train_datagen = ImageDataGenerator(
@@ -224,18 +225,18 @@ class IaEngine:
                   batch_size=10,
                   class_mode='categorical')
 
-      model.fit(
+      history = model.fit(
             training_set,
             steps_per_epoch=4,
             epochs=EPOCHS_QUANTITY,
             validation_data=validation_set,
-            validation_steps=1,
-            callbacks=callbacks_list)
+            validation_steps=1
+            )
       model.summary()
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
 
-      #self.__accuracyGraph(history)
+      self.__accuracyGraph(history)
       #self.__visualize_conv_layer('asd')
       #plt.show()
 
@@ -252,6 +253,7 @@ class IaEngine:
 
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
       image = cv2.imread(img)
+      hsv = self.__image_rgb(image)
       input_array = np.array(np.expand_dims(image, axis=0))
       array = model.predict(input_array)
       return array
@@ -263,11 +265,9 @@ class IaEngine:
       based on the amount of epochs 
       '''
       acc = history.history['accuracy']
-      
 
       loss = history.history['loss']
       
-
       epochs = range(len(acc))
 
       plt.plot(epochs, acc)
@@ -315,38 +315,29 @@ class IaEngine:
       v = mx*100
       return h, s, v
 
-   def __image_rgb(self):
-      new_validation_dir = os.path.join(TRAINING_PICS_FOLDER, "Milanesas", "new_validation")
-      a = os.listdir(new_validation_dir)
-      for x in a:
-         dirpath = new_validation_dir + "/" + x
-         c = os.listdir(dirpath)
-         number = x
-         for image in c:
-            imagepath = dirpath + "/" + image
-            image = cv2.imread(imagepath)
-            chans = cv2.split(image)
-            colors = ('b', 'g', 'r')
-            features = []
-            feature_data = []
-            counter = 0
-            for (chan, color) in zip(chans, colors):
-                    counter += 1
-                    hist = cv2.calcHist([chan], [0], None, [256], [0, 256])
-                    features.extend(hist)
-                    elem = np.argmax(hist)
+   def __image_rgb(self, image):
+      chans = cv2.split(image)
+      colors = ('b', 'g', 'r')
+      features = []
+      feature_data = []
+      counter = 0
+      for (chan, color) in zip(chans, colors):
+               counter += 1
+               hist = cv2.calcHist([chan], [0], None, [256], [0, 256])
+               features.extend(hist)
+               elem = np.argmax(hist)
 
-                    if counter == 1:
-                        blue = int(elem)
-                    elif counter == 2:
-                        green = int(elem)
-                    elif counter == 3:
-                        red = int(elem)
-                        feature_data = [red, green, blue]
-
-            r = feature_data[0]
-            g = feature_data[1]
-            b = feature_data[2]
-            print(r, g, b)
-            hsv = self.rgb_to_hsv(r, g, b)
-            print(hsv)
+               if counter == 1:
+                  blue = int(elem)
+               elif counter == 2:
+                  green = int(elem)
+               elif counter == 3:
+                  red = int(elem)
+                  feature_data = [red, green, blue]
+      print(chans)
+      r = feature_data[0]
+      g = feature_data[1]
+      b = feature_data[2]
+      print(r, g, b)
+      hsv = self.__rgb_to_hsv(r, g, b)
+      return (hsv)
