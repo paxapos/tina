@@ -22,4 +22,4 @@ python manage.py runserver
 
 # Imagenes de entrenamienmto
 
-https://github.com/paxapos/tina/files/9229521/Milanesas.zip
+https://github.com/paxapos/tina/files/9480339/Milanesas.zip
