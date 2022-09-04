@@ -4,6 +4,7 @@ import random
 import shutil
 import cv2
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
 import keras.backend as K
@@ -15,13 +16,15 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from PIL import Image as PImage
+from PIL import Image 
 from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY, VALIDATION_PERCENTAGE
 
 
 
+
 class IaEngine:
-       
+
+
    def __imageReader (self, productName: str):
       '''
         Args:
@@ -44,7 +47,7 @@ class IaEngine:
       '''
 
       # placeholder for input image
-      input_image = Input(shape=(281,199,3))
+      input_image = Input(shape=(140,99,3))
       # ============================================= TOP BRANCH ===================================================
       # first top convolution layer
       top_conv1 = Convolution2D(filters=48,kernel_size=(11,11),strides=(4,4),
@@ -190,6 +193,11 @@ class IaEngine:
 
             img_index=img_index+1
       plt.show()
+          
+   def __hsvFunction(self, img):
+      image = np.array(img)
+      hsv_image = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
+      return Image.fromarray(hsv_image.astype(np.uint8))
 
    def train(self, productName: str):
       '''
@@ -205,25 +213,29 @@ class IaEngine:
       filepath = (MODEL_PATH +"/"+ productName + ".h5")
       checkpoint = ModelCheckpoint(filepath, monitor='accuracy', verbose=1, save_best_only=True, mode='max')
       callback = EarlyStopping(monitor='accuracy', baseline=0.45, patience=5)
-      callbacks_list = [checkpoint]
+      callbacks_list = [checkpoint, callback]
 
       train_datagen = ImageDataGenerator(
-            rescale=1./255,
             shear_range=0.2,
             zoom_range=0.3,
-            horizontal_flip=True)
+            horizontal_flip=True,
+            preprocessing_function=self.__hsvFunction)
+
       validation_datagen = ImageDataGenerator(rescale=1./255)
+
 
       training_set = train_datagen.flow_from_directory(
                   train_dir,
-                  target_size=(281, 199),
+                  target_size=(140, 99),
                   batch_size=10,
                   class_mode='categorical')
+
       validation_set = validation_datagen.flow_from_directory(
                   validation_dir,
-                  target_size=(281, 199),
+                  target_size=(140, 99),
                   batch_size=10,
                   class_mode='categorical')
+
 
       history = model.fit(
             training_set,
@@ -341,3 +353,32 @@ class IaEngine:
       print(r, g, b)
       hsv = self.__rgb_to_hsv(r, g, b)
       return (hsv)
+
+
+def imageresize(img, x, element):
+    
+    img = cv2.imread(img)
+    
+    scale_percent = 50 # percent of original size
+    width = int(img.shape[1] * scale_percent / 100)
+    height = int(img.shape[0] * scale_percent / 100)
+    dim = (width, height)
+    
+    # resize image
+    resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
+
+    filename = "C:/Users/fabbr/OneDrive/Escritorio/Milanesas/validation" + "/" + x + "/" + element
+    print(filename)
+    cv2.imwrite(filename, resized)
+
+
+def asdasd():
+    d = "training/pics/Milanesas/validation"
+    a = os.listdir(d)
+    for x in a:
+        b = d + "/" + x
+        c = os.listdir(b)
+        for element in c:
+            img = b + "/" + element
+            print(img)  
+            imageresize(img, x, element)
