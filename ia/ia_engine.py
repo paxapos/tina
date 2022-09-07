@@ -245,9 +245,9 @@ class IaEngine:
       npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
       
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
-
       npimg = np.array(np.expand_dims(npimg, axis=0))
       return model.predict( npimg )
+
 
    def __accuracyGraph (self, history):
       '''
