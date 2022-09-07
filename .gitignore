@@ -142,3 +142,5 @@ GitHub.sublime-settings
 
 tina/settings.py
 tina/ia/model/keras_metadata.pb
+logs/fit/20220824-202209/train/events.out.tfevents.1661372529.g5-vilar.55184.0.v2
+logs/fit/20220824-202209/validation/events.out.tfevents.1661372538.g5-vilar.55184.1.v2

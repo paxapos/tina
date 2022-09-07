@@ -4,26 +4,33 @@ import random
 import shutil
 import cv2
 import numpy as np
+import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from os import listdir
+import keras.backend as K
 from pathlib import Path
-from tensorflow.keras import layers, regularizers, callbacks
+from tensorflow.keras import layers, regularizers, callbacks, preprocessing
 from tensorflow.keras import Model
 from tensorflow.keras.optimizers import RMSprop
+from keras.models import Sequential,Model,load_model
+from keras.optimizers import SGD
+from keras.layers import BatchNormalization, Lambda, Input, Dense, Convolution2D, MaxPooling2D, AveragePooling2D, ZeroPadding2D, Dropout, Flatten, Reshape, Activation, Concatenate
+from keras.preprocessing.image import ImageDataGenerator
+from keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, BatchNormalization, MaxPooling2D, Dropout
-from tensorflow.keras.layers import Activation
-from tensorflow.keras.layers import Flatten
-from tensorflow.keras.layers import Dense
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from PIL import Image as PImage
+from PIL import Image 
 from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY, VALIDATION_PERCENTAGE
 
 
+
+IMG_HEIGHT = 140
+IMG_WITH = 99
+
+
 class IaEngine:
-       
+
+
    def __imageReader (self, productName: str):
       '''
         Args:
@@ -45,60 +52,110 @@ class IaEngine:
       and returns the model
       '''
 
-      model = Sequential()
-      inputShape = (281, 199, 3)
-      model.add(Conv2D(32, (3, 3), input_shape=inputShape, padding = "same", activation='relu'))
-      model.add(BatchNormalization())
-      model.add(MaxPooling2D(2))
-      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
-      model.add(BatchNormalization())
-      model.add(MaxPooling2D(2))
-      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
-      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
-      model.add(Conv2D(32, (3, 3), padding = "same", activation='relu'))
-      model.add(MaxPooling2D(2))
+      # placeholder for input image
+      input_image = Input(shape=(IMG_HEIGHT, IMG_WITH,3))
+      # ============================================= TOP BRANCH ===================================================
+      # first top convolution layer
+      top_conv1 = Convolution2D(filters=48,kernel_size=(11,11),strides=(4,4),
+                                 input_shape=(IMG_HEIGHT,IMG_WITH,3),activation='relu')(input_image)
+      top_conv1 = BatchNormalization()(top_conv1)
+      top_conv1 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_conv1)
 
-      model.add(Flatten())
-      model.add(Dense(4096, activation='relu'))
-      model.add(Dropout(0.5))
-      model.add(Dense(4096, activation='relu'))
-      model.add(Dropout(0.5))
-      model.add(Dense(4096, activation='relu'))
-      model.add(Dropout(0.5))
-      model.add(Dense(10, activation='softmax', kernel_regularizer=regularizers.l2(0.001)))
+      # second top convolution layer
+      # split feature map by half
+      top_top_conv2 = Lambda(lambda x : x[:,:,:,:24])(top_conv1)
+      top_bot_conv2 = Lambda(lambda x : x[:,:,:,24:])(top_conv1)
 
-      model.compile(
-         optimizer='adam',
-         loss='categorical_crossentropy',
-         metrics=["accuracy"]
-      )
+      top_top_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_top_conv2)
+      top_top_conv2 = BatchNormalization()(top_top_conv2)
+      top_top_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_top_conv2)
+
+      top_bot_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_bot_conv2)
+      top_bot_conv2 = BatchNormalization()(top_bot_conv2)
+      top_bot_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_bot_conv2)
+
+      # third top convolution layer
+      # concat 2 feature map
+      top_conv3 = Concatenate()([top_top_conv2,top_bot_conv2])
+      top_conv3 = Convolution2D(filters=192,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_conv3)
+
+      # fourth top convolution layer
+      # split feature map by half
+      top_top_conv4 = Lambda(lambda x : x[:,:,:,:96])(top_conv3)
+      top_bot_conv4 = Lambda(lambda x : x[:,:,:,96:])(top_conv3)
+
+      top_top_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_top_conv4)
+      top_bot_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_bot_conv4)
+
+      # fifth top convolution layer
+      top_top_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_top_conv4)
+      top_top_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_top_conv5) 
+
+      top_bot_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_bot_conv4)
+      top_bot_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_bot_conv5)
+
+      # ============================================= TOP BOTTOM ===================================================
+      # first bottom convolution layer
+      bottom_conv1 = Convolution2D(filters=48,kernel_size=(11,11),strides=(4,4),
+                                 input_shape=(224,224,3),activation='relu')(input_image)
+      bottom_conv1 = BatchNormalization()(bottom_conv1)
+      bottom_conv1 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_conv1)
+
+      # second bottom convolution layer
+      # split feature map by half
+      bottom_top_conv2 = Lambda(lambda x : x[:,:,:,:24])(bottom_conv1)
+      bottom_bot_conv2 = Lambda(lambda x : x[:,:,:,24:])(bottom_conv1)
+
+      bottom_top_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_top_conv2)
+      bottom_top_conv2 = BatchNormalization()(bottom_top_conv2)
+      bottom_top_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_top_conv2)
+
+      bottom_bot_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_bot_conv2)
+      bottom_bot_conv2 = BatchNormalization()(bottom_bot_conv2)
+      bottom_bot_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_bot_conv2)
+
+      # third bottom convolution layer
+      # concat 2 feature map
+      bottom_conv3 = Concatenate()([bottom_top_conv2,bottom_bot_conv2])
+      bottom_conv3 = Convolution2D(filters=192,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_conv3)
+
+      # fourth bottom convolution layer
+      # split feature map by half
+      bottom_top_conv4 = Lambda(lambda x : x[:,:,:,:96])(bottom_conv3)
+      bottom_bot_conv4 = Lambda(lambda x : x[:,:,:,96:])(bottom_conv3)
+
+      bottom_top_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_top_conv4)
+      bottom_bot_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_bot_conv4)
+
+      # fifth bottom convolution layer
+      bottom_top_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_top_conv4)
+      bottom_top_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_top_conv5) 
+
+      bottom_bot_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_bot_conv4)
+      bottom_bot_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_bot_conv5)
+
+      # ======================================== CONCATENATE TOP AND BOTTOM BRANCH =================================
+      conv_output = Concatenate()([top_top_conv5,top_bot_conv5,bottom_top_conv5,bottom_bot_conv5])
+
+      # Flatten
+      flatten = Flatten()(conv_output)
+
+      # Fully-connected layer
+      FC_1 = Dense(units=4096, activation='relu')(flatten)
+      FC_1 = Dropout(0.6)(FC_1)
+      FC_2 = Dense(units=4096, activation='relu')(FC_1)
+      FC_2 = Dropout(0.6)(FC_2)
+      output = Dense(units=10, activation='softmax')(FC_2)
+      
+      model = Model(inputs=input_image,outputs=output)
+      #sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
+      sgd = SGD(lr=0.01, momentum=0.9, decay=0.0005, nesterov=True)
+      model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
       return model
 
 
-   def __imageSorter(self, path: str, productName: str):
-      '''
-      @TODO: write proper documentation for imageSorter__ function
-      '''
-
-      imgs = os.listdir(path)
-      cantImgs = len(imgs)
-      percentage = cantImgs * VALIDATION_PERCENTAGE / 100
-      validationImages = []
-      trainImages = imgs
-      counter = 0
-
-      while (counter < percentage):
-         randomImage = random.choice(imgs)
-         validationImages.append(randomImage)
-         trainImages.remove(randomImage)
-         shutil.move(path + "/" + randomImage, "training/pics/" + productName + "/validation")
-         counter += 1
-      for image in trainImages:
-         shutil.move(path + "/" + image, "training/pics/" + productName + "/train")
-
-   def visualize_conv_layer(self, layer_name):
+   def __visualize_conv_layer(self, layer_name):
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ "Milanesas" +".h5")
-      model.layers[0]._name='conv_0'
       layer_output=model.get_layer(layer_name).output
       
       intermediate_model=tensorflow.keras.models.Model(inputs=model.input,outputs=layer_output)
@@ -121,6 +178,12 @@ class IaEngine:
 
             img_index=img_index+1
       plt.show()
+          
+   def __hsvFunction(self, img):
+      #image = np.array(img)
+      hsv_image = cv2.cvtColor(img,cv2.COLOR_RGB2HSV)
+      return Image.fromarray(hsv_image.astype(np.uint8))
+
    def train(self, productName: str):
       '''
       This function creates a model for each product, trains it based on
@@ -128,45 +191,44 @@ class IaEngine:
       Args:
          productName: a string with the name of the product with which the model will be trained and saved
       '''
-
+      
       train_dir, validation_dir = self.__imageReader(productName)
       model = self.__createModel()
-     
-      train_datagen = ImageDataGenerator(rescale=1./255)
-      val_datagen = ImageDataGenerator(rescale=1./255)
+   
+      filepath = (MODEL_PATH +"/"+ productName + ".h5")
+      #checkpoint = ModelCheckpoint(filepath, monitor='accuracy', verbose=1, save_best_only=True, mode='max')
+      callback = EarlyStopping(monitor='accuracy', baseline=0.05, patience=20, mode="max", verbose=1)
+      callbacks_list = [callback]
 
-      train_generator = train_datagen.flow_from_directory(
-      train_dir,
-      target_size=(281, 199),
-      batch_size=10,
-      class_mode='categorical')
+      train_datagen = ImageDataGenerator()
 
-      validation_generator = val_datagen.flow_from_directory(
-      validation_dir,
-      target_size=(281, 199),
-      batch_size=10,
-      class_mode='categorical')
+      validation_datagen = ImageDataGenerator()
 
-      print('Training...')
-      tensorboard_callback = callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+      training_set = train_datagen.flow_from_directory(
+                  train_dir,
+                  target_size=(IMG_HEIGHT, IMG_WITH),
+                  class_mode='categorical')
 
+      validation_set = validation_datagen.flow_from_directory(
+                  validation_dir,
+                  target_size=(IMG_HEIGHT, IMG_WITH),
+                  class_mode='categorical')
 
       history = model.fit(
-      train_generator,
-      steps_per_epoch=4,
-      callbacks=[tensorboard_callback],
-      epochs=EPOCHS_QUANTITY,
-      validation_data=validation_generator,
-      validation_steps=1,
-      verbose=2)
-      print('Model Trained!')
-
+            training_set,
+            steps_per_epoch=4,
+            epochs=EPOCHS_QUANTITY,
+            validation_data=validation_set,
+            validation_steps=1,
+            #callbacks= callbacks_list
+            )
+      model.summary()
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
 
-      #self.__accuracyGraph(history)
-      self.visualize_conv_layer('conv_0')
-      plt.show()
+      self.__accuracyGraph(history)
+      #self.__visualize_conv_layer('asd')
+      #plt.show()
 
    def predict(self, product: str, img: str):
       """
@@ -179,11 +241,13 @@ class IaEngine:
             Numpy array(s) of predictions. Based on Keras Model.predict
       """
 
+      loadimg = preprocessing.image.load_img( img )
+      npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
+      
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
-      image = cv2.imread(img)
-      input_array = np.array(np.expand_dims(image, axis=0))
-      array = model.predict(input_array)
-      return array
+
+      npimg = np.array(np.expand_dims(npimg, axis=0))
+      return model.predict( npimg )
 
    def __accuracyGraph (self, history):
       '''
@@ -192,11 +256,9 @@ class IaEngine:
       based on the amount of epochs 
       '''
       acc = history.history['accuracy']
-      
 
       loss = history.history['loss']
       
-
       epochs = range(len(acc))
 
       plt.plot(epochs, acc)
@@ -211,71 +273,3 @@ class IaEngine:
 
       plt.show()
 
-   def __imageblur(self, imgpath, number, name):
-      name = name
-      img = cv2.imread(imgpath)
-      kernelsize = [64, 64]
-      c = 0
-      resultimage = cv2.blur(img, (kernelsize))
-      while c < 15:
-         resultimage = cv2.blur(resultimage, (kernelsize))
-         c += 1
-      filename = "pics/Milanesas/new_validation/" + number + "/" + name
-      print(filename)
-      cv2.imwrite(filename, resultimage)
-
-   def __rgb_to_hsv(self, r, g, b):
-      r, g, b = r/255.0, g/255.0, b/255.0
-      mx = max(r, g, b)
-      mn = min(r, g, b)
-      df = mx-mn
-      if mx == mn:
-         h = 0
-      elif mx == r:
-         h = (60 * ((g-b)/df) + 360) % 360
-      elif mx == g:
-         h = (60 * ((b-r)/df) + 120) % 360
-      elif mx == b:
-         h = (60 * ((r-g)/df) + 240) % 360
-      if mx == 0:
-         s = 0
-      else:
-         s = (df/mx)*100
-      v = mx*100
-      return h, s, v
-
-   def __image_rgb(self):
-      new_validation_dir = os.path.join(TRAINING_PICS_FOLDER, "Milanesas", "new_validation")
-      a = os.listdir(new_validation_dir)
-      for x in a:
-         dirpath = new_validation_dir + "/" + x
-         c = os.listdir(dirpath)
-         number = x
-         for image in c:
-            imagepath = dirpath + "/" + image
-            image = cv2.imread(imagepath)
-            chans = cv2.split(image)
-            colors = ('b', 'g', 'r')
-            features = []
-            feature_data = []
-            counter = 0
-            for (chan, color) in zip(chans, colors):
-                    counter += 1
-                    hist = cv2.calcHist([chan], [0], None, [256], [0, 256])
-                    features.extend(hist)
-                    elem = np.argmax(hist)
-
-                    if counter == 1:
-                        blue = int(elem)
-                    elif counter == 2:
-                        green = int(elem)
-                    elif counter == 3:
-                        red = int(elem)
-                        feature_data = [red, green, blue]
-
-            r = feature_data[0]
-            g = feature_data[1]
-            b = feature_data[2]
-            print(r, g, b)
-            hsv = self.rgb_to_hsv(r, g, b)
-            print(hsv)
