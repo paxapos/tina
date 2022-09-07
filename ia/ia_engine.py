@@ -266,10 +266,8 @@ class IaEngine:
 
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
       image = cv2.imread(img)
-      hsv_image = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
-      input_array = np.array(np.expand_dims(hsv_image, axis=0))
+      input_array = np.array(np.expand_dims(image, axis=0))
       array = model.predict(input_array)
-      print(hsv_image)
       return array
 
    def __accuracyGraph (self, history):
