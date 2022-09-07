@@ -211,9 +211,9 @@ class IaEngine:
       model = self.__createModel()
    
       filepath = (MODEL_PATH +"/"+ productName + ".h5")
-      checkpoint = ModelCheckpoint(filepath, monitor='accuracy', verbose=1, save_best_only=True, mode='max')
-      callback = EarlyStopping(monitor='accuracy', baseline=0.45, patience=5)
-      callbacks_list = [checkpoint, callback]
+      #checkpoint = ModelCheckpoint(filepath, monitor='accuracy', verbose=1, save_best_only=True, mode='max')
+      callback = EarlyStopping(monitor='accuracy', baseline=0.05, patience=5, mode="max", verbose=1)
+      callbacks_list = [callback]
 
       train_datagen = ImageDataGenerator(
             shear_range=0.2,
@@ -221,7 +221,7 @@ class IaEngine:
             horizontal_flip=True,
             preprocessing_function=self.__hsvFunction)
 
-      validation_datagen = ImageDataGenerator(rescale=1./255)
+      validation_datagen = ImageDataGenerator(preprocessing_function=self.__hsvFunction)
 
 
       training_set = train_datagen.flow_from_directory(
@@ -242,7 +242,8 @@ class IaEngine:
             steps_per_epoch=4,
             epochs=EPOCHS_QUANTITY,
             validation_data=validation_set,
-            validation_steps=1
+            validation_steps=1,
+            callbacks= callbacks_list
             )
       model.summary()
       model.save(MODEL_PATH +"/"+ productName + ".h5")
@@ -265,9 +266,10 @@ class IaEngine:
 
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
       image = cv2.imread(img)
-      hsv = self.__image_rgb(image)
-      input_array = np.array(np.expand_dims(image, axis=0))
+      hsv_image = cv2.cvtColor(image,cv2.COLOR_RGB2HSV)
+      input_array = np.array(np.expand_dims(hsv_image, axis=0))
       array = model.predict(input_array)
+      print(hsv_image)
       return array
 
    def __accuracyGraph (self, history):
@@ -294,8 +296,7 @@ class IaEngine:
 
       plt.show()
 
-   def __imageblur(self, imgpath, number, name):
-      name = name
+   def __imageblur(self, imgpath):
       img = cv2.imread(imgpath)
       kernelsize = [64, 64]
       c = 0
@@ -303,9 +304,7 @@ class IaEngine:
       while c < 15:
          resultimage = cv2.blur(resultimage, (kernelsize))
          c += 1
-      filename = "pics/Milanesas/new_validation/" + number + "/" + name
-      print(filename)
-      cv2.imwrite(filename, resultimage)
+      return resultimage
 
    def __rgb_to_hsv(self, r, g, b):
       r, g, b = r/255.0, g/255.0, b/255.0
@@ -353,32 +352,3 @@ class IaEngine:
       print(r, g, b)
       hsv = self.__rgb_to_hsv(r, g, b)
       return (hsv)
-
-
-def imageresize(img, x, element):
-    
-    img = cv2.imread(img)
-    
-    scale_percent = 50 # percent of original size
-    width = int(img.shape[1] * scale_percent / 100)
-    height = int(img.shape[0] * scale_percent / 100)
-    dim = (width, height)
-    
-    # resize image
-    resized = cv2.resize(img, dim, interpolation = cv2.INTER_AREA)
-
-    filename = "C:/Users/fabbr/OneDrive/Escritorio/Milanesas/validation" + "/" + x + "/" + element
-    print(filename)
-    cv2.imwrite(filename, resized)
-
-
-def asdasd():
-    d = "training/pics/Milanesas/validation"
-    a = os.listdir(d)
-    for x in a:
-        b = d + "/" + x
-        c = os.listdir(b)
-        for element in c:
-            img = b + "/" + element
-            print(img)  
-            imageresize(img, x, element)
