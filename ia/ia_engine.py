@@ -241,7 +241,7 @@ class IaEngine:
             Numpy array(s) of predictions. Based on Keras Model.predict
       """
 
-      loadimg = preprocessing.image.load_img( img )
+      loadimg = preprocessing.image.load_img( img, target_size=(IMG_HEIGHT, IMG_WITH) )
       npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
       
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
