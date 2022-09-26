@@ -25,7 +25,7 @@ from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUA
 
 
 IMG_HEIGHT = 140
-IMG_WITH = 99
+IMG_WIDTH = 99
 
 
 class IaEngine:
@@ -53,11 +53,11 @@ class IaEngine:
       '''
 
       # placeholder for input image
-      input_image = Input(shape=(IMG_HEIGHT, IMG_WITH,3))
+      input_image = Input(shape=(IMG_HEIGHT, IMG_WIDTH,3))
       # ============================================= TOP BRANCH ===================================================
       # first top convolution layer
       top_conv1 = Convolution2D(filters=48,kernel_size=(11,11),strides=(4,4),
-                                 input_shape=(IMG_HEIGHT,IMG_WITH,3),activation='relu')(input_image)
+                                 input_shape=(IMG_HEIGHT,IMG_WIDTH,3),activation='relu')(input_image)
       top_conv1 = BatchNormalization()(top_conv1)
       top_conv1 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_conv1)
 
@@ -97,7 +97,7 @@ class IaEngine:
       # ============================================= TOP BOTTOM ===================================================
       # first bottom convolution layer
       bottom_conv1 = Convolution2D(filters=48,kernel_size=(11,11),strides=(4,4),
-                                 input_shape=(224,224,3),activation='relu')(input_image)
+                                 input_shape=(IMG_HEIGHT, IMG_WIDTH, 3),activation='relu')(input_image)
       bottom_conv1 = BatchNormalization()(bottom_conv1)
       bottom_conv1 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_conv1)
 
@@ -193,25 +193,44 @@ class IaEngine:
       '''
       
       train_dir, validation_dir = self.__imageReader(productName)
-      model = self.__createModel()
-   
+      #model = self.__createModel()
+
+      
+      vggModel = tensorflow.keras.applications.vgg16.VGG16()
+      print(type(vggModel))
+      print(vggModel.summary())
+
+
+      model = tensorflow.keras.Sequential()
+
+      for layer in vggModel.layers[0:-1]:
+         model.add(layer)
+
+      for layer in model.layers:
+         layer.trainable = False
+
+      
+      model.add(layers.Flatten(name="capa"))
+      model.add(layers.Dense(10, activation="softmax"))
+      print(model.summary())
+      model.compile(optimizer=tensorflow.keras.optimizers.Adam(lr=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
+
+      preprocessInput = tensorflow.keras.applications.vgg16.preprocess_input
+
       filepath = (MODEL_PATH +"/"+ productName + ".h5")
-      #checkpoint = ModelCheckpoint(filepath, monitor='accuracy', verbose=1, save_best_only=True, mode='max')
-      callback = EarlyStopping(monitor='accuracy', baseline=0.05, patience=20, mode="max", verbose=1)
-      callbacks_list = [callback]
 
-      train_datagen = ImageDataGenerator()
+      train_datagen = ImageDataGenerator(preprocessing_function=preprocessInput)
 
-      validation_datagen = ImageDataGenerator()
+      validation_datagen = ImageDataGenerator(preprocessing_function=preprocessInput)
 
       training_set = train_datagen.flow_from_directory(
                   train_dir,
-                  target_size=(IMG_HEIGHT, IMG_WITH),
+                  target_size=(224, 224),
                   class_mode='categorical')
 
       validation_set = validation_datagen.flow_from_directory(
                   validation_dir,
-                  target_size=(IMG_HEIGHT, IMG_WITH),
+                  target_size=(224, 224),
                   class_mode='categorical')
 
       history = model.fit(
@@ -220,13 +239,14 @@ class IaEngine:
             epochs=EPOCHS_QUANTITY,
             validation_data=validation_set,
             validation_steps=1,
-            #callbacks= callbacks_list
             )
       model.summary()
       model.save(MODEL_PATH +"/"+ productName + ".h5")
 
 
       self.__accuracyGraph(history)
+      print(model.metrics_names)
+      return model.evaluate(training_set, batch_size=10)
       #self.__visualize_conv_layer('asd')
       #plt.show()
 
@@ -241,11 +261,12 @@ class IaEngine:
             Numpy array(s) of predictions. Based on Keras Model.predict
       """
 
-      loadimg = preprocessing.image.load_img( img, target_size=(IMG_HEIGHT, IMG_WITH) )
+      loadimg = preprocessing.image.load_img( img, target_size=(224, 224) )
       npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
       
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
       npimg = np.array(np.expand_dims(npimg, axis=0))
+
       return model.predict( npimg )
 
 
@@ -272,4 +293,3 @@ class IaEngine:
       plt.title('Training and validation loss')
 
       plt.show()
-
