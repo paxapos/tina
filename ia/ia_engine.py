@@ -195,8 +195,8 @@ class IaEngine:
       train_dir, validation_dir = self.__imageReader(productName)
       #model = self.__createModel()
 
-      
-      vggModel = tensorflow.keras.applications.vgg16.VGG16()
+      input = Input(shape=(IMG_HEIGHT, IMG_WIDTH, 3))
+      vggModel = tensorflow.keras.applications.vgg16.VGG16(include_top=False, input_tensor=input)
       print(type(vggModel))
       print(vggModel.summary())
 
@@ -225,12 +225,12 @@ class IaEngine:
 
       training_set = train_datagen.flow_from_directory(
                   train_dir,
-                  target_size=(224, 224),
+                  target_size=(IMG_HEIGHT, IMG_WIDTH),
                   class_mode='categorical')
 
       validation_set = validation_datagen.flow_from_directory(
                   validation_dir,
-                  target_size=(224, 224),
+                  target_size=(IMG_HEIGHT, IMG_WIDTH),
                   class_mode='categorical')
 
       history = model.fit(
@@ -245,8 +245,8 @@ class IaEngine:
 
 
       self.__accuracyGraph(history)
-      print(model.metrics_names)
-      return model.evaluate(training_set, batch_size=10)
+      print (model.metrics_names)
+      print (model.evaluate(training_set, batch_size=10))
       #self.__visualize_conv_layer('asd')
       #plt.show()
 
@@ -261,7 +261,7 @@ class IaEngine:
             Numpy array(s) of predictions. Based on Keras Model.predict
       """
 
-      loadimg = preprocessing.image.load_img( img, target_size=(224, 224) )
+      loadimg = preprocessing.image.load_img( img, target_size=(IMG_HEIGHT, IMG_WIDTH) )
       npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
       
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
