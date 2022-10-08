@@ -193,35 +193,16 @@ class IaEngine:
       '''
       
       train_dir, validation_dir = self.__imageReader(productName)
-      #model = self.__createModel()
+      model = self.__createModel()
 
-      input = Input(shape=(IMG_HEIGHT, IMG_WIDTH, 3))
-      vggModel = tensorflow.keras.applications.vgg16.VGG16(include_top=False, input_tensor=input)
-      print(type(vggModel))
-      print(vggModel.summary())
-
-
-      model = tensorflow.keras.Sequential()
-
-      for layer in vggModel.layers[0:-1]:
-         model.add(layer)
-
-      for layer in model.layers:
-         layer.trainable = False
-
-      
-      model.add(layers.Flatten(name="capa"))
-      model.add(layers.Dense(10, activation="softmax"))
-      print(model.summary())
-      model.compile(optimizer=tensorflow.keras.optimizers.Adam(lr=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
-
-      preprocessInput = tensorflow.keras.applications.vgg16.preprocess_input
-
-      filepath = (MODEL_PATH +"/"+ productName + ".h5")
-
-      train_datagen = ImageDataGenerator(preprocessing_function=preprocessInput)
-
-      validation_datagen = ImageDataGenerator(preprocessing_function=preprocessInput)
+      train_datagen = ImageDataGenerator(rescale=1./255, 
+         rotation_range=20, 
+         horizontal_flip=True, 
+         width_shift_range=0.2, 
+         height_shift_range=0.2, 
+         shear_range=0.2, 
+         zoom_range=0.2)
+      validation_datagen = ImageDataGenerator(rescale=1./255)
 
       training_set = train_datagen.flow_from_directory(
                   train_dir,
@@ -266,8 +247,8 @@ class IaEngine:
       
       model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
       npimg = np.array(np.expand_dims(npimg, axis=0))
-
-      return model.predict( npimg )
+      predict = model.predict( npimg )
+      return np.argmax(predict)
 
 
    def __accuracyGraph (self, history):
