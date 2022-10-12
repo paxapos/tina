@@ -1,0 +1,62 @@
+body {
+background: linear-gradient(180deg, #353A40 0%, #16171B 100%);
+border-radius: 60px;
+}
+.rectangulo{
+position: absolute;
+width: 1024px;
+height: 155px;
+left: calc(50% - 1024px/2);
+top: 387px;
+
+background: #242424;
+box-shadow: 20px 20px 20px #1A1818, inset 5px 5px 20px #1A1818;
+border-radius: 10px;
+}
+.cuadrado{
+
+background: #242424;
+box-shadow: 20px 20px 20px #1A1818, inset 5px 5px 20px #1A1818;
+border-radius: 10px;
+}
+
+.box1{
+box-shadow: 20px 20px 50px #00d2c6, 
+            -30px -30px 60px #00ffff;
+border-radius: 25px;
+background: linear-gradient(145deg, #3d3d3d, #494949);
+box-shadow:  47px 47px 33px #3a3a3a,
+             -47px -47px 33px #4e4e4e;
+}
+.leftcolumn {   
+  float: left;
+  width: 20%;
+  padding-left: px;
+  background: (180deg, #353A40 0%, #16171B 100%);
+  border-radius: 60px;
+  border-radius: 10px;
+}
+.rightcolumn {
+  float: left;
+  width: 20%;
+  padding-left: 0px;
+  background: (180deg, #353A40 0%, #16171B 100%);
+  border-radius: 60px;
+  border-radius: 10px;
+  }
+.contenedor{
+  max-width: 500px;
+  background: linear-gradient(180deg, #353A40 0%, #16171B 100%);
+  border-radius: 60px;
+  border-radius: 10px;
+}
+
+.boton{
+position: absolute; width: 150px; height: 150px;
+left: 150px;
+top: 500px;
+border-radius: 50%;
+background: #7537b3;
+box-shadow: inset -5px -5px 10px #2f1648,
+            inset 5px 5px 10px #bb58ff;
+}
