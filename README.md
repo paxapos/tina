@@ -11,6 +11,7 @@ Aquí incorporaremos toda la documentación necesaria para unir las APPS, la API
 # First steps
 
 git clone git@github.com:paxapos/tina.git
+
 pip install -r requirements.txt 
 
 copy /tina/settings.py.copy to /tina/settings.py and change SECRET_KEY 
