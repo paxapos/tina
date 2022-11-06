@@ -1,0 +1,19 @@
+<head>
+    <title>predict</title>
+</head>
+<body>
+    <h2>Predict</h2>
+    <form method="post" enctype="multipart/form-data">
+        {%csrf_token%}
+        <span>Product</span>
+        <input type="text" name="product">
+        <br>
+        <span>Picture</span>
+        <input type="file" name="picture">
+        <button type="submit">Predict!</button>
+    </form>
+
+    <h2>Picture score: {{prediction}} </h2> 
+
+</body>
+

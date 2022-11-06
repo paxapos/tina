@@ -3,6 +3,8 @@ import os
 from uuid import uuid4
 from datetime import datetime
 
+from django.core.files.storage import FileSystemStorage
+from django.shortcuts import render
 from django.template import loader
 from django.http import (
     HttpRequest, HttpResponse,
@@ -11,7 +13,8 @@ from django.http import (
     JsonResponse
 )
 
-from tina.settings import BASE_DIR
+
+from tina.settings import BASE_DIR, MEDIA_ROOT
 from ia.ia_engine import IaEngine
 from core.models import Product, Score
 from training.models import TrainedProduct, TrainedProductPicture
@@ -103,3 +106,16 @@ def remove(request) -> HttpResponse:
 def train(request) -> HttpResponse:
     IaEngine.train()
     return HttpResponse("")
+
+def predict(request):
+    if request.method == "POST":
+        uploaded_picture = request.FILES["picture"]
+        fs = FileSystemStorage()
+        fs.save(uploaded_picture.name, uploaded_picture)
+        picture_path = os.path.join(MEDIA_ROOT + '/' + uploaded_picture.name)
+        product = request.POST['product']
+        prediction = IaEngine.predict(product, product, picture_path)
+        print(prediction)  
+        return render(request, "predict/predict.html", {'prediction': prediction})
+    else:
+        return render(request, "predict/predict.html")
