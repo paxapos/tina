@@ -111,6 +111,7 @@ def predict(request):
     if request.method == "POST":
         uploaded_picture = request.FILES["picture"]
         fs = FileSystemStorage()
+        fs.delete(uploaded_picture.name)
         fs.save(uploaded_picture.name, uploaded_picture)
         picture_path = os.path.join(MEDIA_ROOT + '/' + uploaded_picture.name)
         product = request.POST['product']
