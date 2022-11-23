@@ -1,115 +1,161 @@
  /*fuente*/
 @import url(https://fonts.googleapis.com/css?family=Lato:200,100|Lato);
+:root{
+  --main-primary-color: #9555D3;
+  --main-color: #ffffff;
+  --gris: #7F8489;
+  margin: 0;
+  padding: 0;
+}
+
+a{
+  color: var(--main-color);
+}
 
 html {
   font-family: 'FontAwesome', "Lato";
   -ms-text-size-adjust:100%;  /*empareja el tamaño de la fuente en caso de usar una opcion de fuente no especificada*/
   -webkit-text-size-adjust:100%;
+  
+  font-size: 23px;
+  color: var(--gris);
+  
 }
 
 body {
-  margin:30px;
   background: linear-gradient(180deg, #353A40 0%, #16171B 100%);
-}
-
-h3{
-  color: #fff;
-  margin-left: 250px;
-  font-size: 25px;
-}
-
-p{
-  font-size: 23px;
-  color: #7F8489;
-  margin-bottom: 100px;
-  margin-left: 250px;
+  height: 100%;
+  margin: 0;
+  padding: 0;
 }
 
 
-.titulo-tina{
+.text-center {
+  text-align: center;
+}
+
+.container{
+  margin:auto;;
+  width: 720px;
+  height: 100vh;
+}
+
+h1{
+  color: var(--main-primary-color);
   font-style: normal;
   font-weight: 700;
   font-size: 40px;
-  line-height: 5px;
-  text-align: center;
-  padding-top: 50px;
-
-  color: #9555D3;
 }
 
-.subtitulo{
+h2{
   font-weight: 700;
   font-size: 28px;
   text-align: center;
-  padding-bottom: 80px;
+}
 
-  color: #FFFFFF;
+h2,h3,h4{
+  color: var(--main-color);
+}
+
+.margen-tb {
+  margin-top: 2em ;
+  margin-bottom: 2em;
+}
+
+.grid-2-cols{
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr;
+  grid-column-gap: 0px;
+  grid-row-gap: 0px;
+  text-align: center;
+  width: 550px;
+  margin:auto;
+}
+.grid-2-cols > div{
+  padding: 2em;
 }
 
 
-.contenedor{
-  display: flex; 
-  flex-direction: row;  
-  justify-content: center;
+label {
+  font-style: normal;
+  font-weight: bold;
+  color: var(--main-primary-color);
+  font-size: 18px;
 }
 
-
-.input {
-  width: 150px;
+input {
+  width: 100%;
   height: 40px;
   background: #212428;
   box-shadow: inset -5px -5px 5px #2E3236, inset 5px 5px 10px #1A1818;
   border-radius: 10px;
-  margin-left:50px;
-  margin-right:50px;
   margin-top:15px;
   margin-bottom:80px;
 }
 
-.label {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  margin-left:50px;
-  margin-right:94px;
 
-  color: #FFFFFF;
-  font-size: 18px;
+
+
+
+
+
+
+
+
+/** CSS DEL BOTON **/
+
+
+
+.boton-container{
+  width: 169px;
+  height: 162px;
+  position: relative;
+  margin: 0;
+  padding: 0;
 }
 
-.label2 {
-  font-style: normal;
-  font-weight: bold;
-  font-size: 16px;
-  margin-left:50px;
-  margin-right:50px;
-
-  color: #FFFFFF;
-  font-size: 18px;
+.boton-container h1{
+  font-size: large;
+  color: white;
+  margin-top: 20px;
 }
 
-
-.boton a {
-  width: 150px; 
-  height: 150px;
-  display: block;
-  border-radius: 50%;
-  /* line-height: 70px; */
-  color: #FFF;
-  background: #7537b3;
-  text-decoration: none;
-  overflow: hidden;
-  text-align: center;
-  font-size: 2.2rem;
-  box-shadow:
-  inset -5px -5px 10px #2f1648,
-  inset 5px 5px 10px #bb58ff;
-  margin-top:50px;
-  margin-bottom: 20px;
+.boton-container .svg{
+  width: 38px;
+  position: absolute;
+  top: 43px;
+  left: 43px;
+  margin: auto;
+  /* transform: translateY(-275%); */
+  /* margin-left: -18px; */
 }
 
-.boton a::before {
-  content: "\f030";
-  display: block;
-  margin: 55px;
+.boton{
+  position: relative;
+  width: 128px;
+  height: 128px;
+  margin: auto;
+}
+
+.boton-bot{
+  position: absolute;
+  width: 124px;
+  height: 124px;
+  left: 0px;
+  top: 0px;
+  background: linear-gradient(135deg, #411E63 22.75%, #9B49EC 84.81%);
+  filter: blur(0.5px);
+  border-radius: 100%;
+}
+
+.boton-sombra{
+  position: absolute;
+  width: 132px;
+  height: 132px;
+  left: -4px;
+  top: -4px;
+  background: linear-gradient(135deg, #9569BF 14.75%, #361953 84.81%);
+  box-shadow: 10px 15px 40px #000000, -10px -15px 40px #2F393D;
+  border-radius: 100%;
 }
