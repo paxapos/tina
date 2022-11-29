@@ -107,6 +107,9 @@ def train(request) -> HttpResponse:
     IaEngine.train()
     return HttpResponse("")
 
+def training(request):
+    return render(request, "training/tina2.html")
+
 def predict(request):
     if request.method == "POST":
         uploaded_picture = request.FILES["picture"]
@@ -120,3 +123,4 @@ def predict(request):
         return render(request, "predict/predict.html", {'prediction': prediction})
     else:
         return render(request, "predict/predict.html")
+

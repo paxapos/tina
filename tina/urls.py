@@ -15,8 +15,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from training.views import train_admin, upload, train, capture, remove, predict
-
+from training.views import train_admin, upload, train, capture, remove, predict, training
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -29,4 +28,5 @@ urlpatterns = [
     path('train/', train, name='train'),
     path('remove/', remove, name='remove'),
     path('predict/', predict, name='predict'),
+    path('training/', training, name='training'),
 ]
