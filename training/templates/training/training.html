@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+ 	<title>TRAINING PAGE</title>
+     {% load static %}
+	<link rel="stylesheet" type="text/css" href="{% static 'training/training.css' %}" media="all" />
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<body>
+	<main>
+		<header>
+<div>
+<div class="titulo-tina">PaxaPos - TINA</div>
+<div class="subtitulo"><h1>TRAINING</h1></div>
+</div>
+</header>
+
+
+<div style="text-align: left;">
+	<h3>First Steps</h3>
+	<p> In the following fields you must insert the number of <br> 
+		photos you want to take and the number of seconds <br>
+		in which it will be done
+	</p>
+</div>
+<br>
+<div class="interact">
+	<div class="contenedor">
+	<div>
+		<label class="label">Amount of pictures</label>
+		<label class="label">Seconds</label>
+	</div>
+	</div>
+
+
+	<div class="contenedor">
+	<div>
+		<input class="input" autocomplete="off" name="Amount of pictures" id="pictures" type="text">
+		<input class="input" autocomplete="off" name="Seconds" id="pictures" type="text">
+	</div>
+	</div>
+
+	<div class="contenedor">
+	<div class="boton">
+		<a href="{% url 'pictures' %}" class="boton" ></a>
+	</div>
+	</div>
+
+	<div class="contenedor">
+	<div>
+		<label class="label2">Take the pictures</label>
+	</div>
+	</div>
+</div>
+</main>
+</body>
+
+
+</html>

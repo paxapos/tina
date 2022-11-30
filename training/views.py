@@ -108,7 +108,10 @@ def train(request) -> HttpResponse:
     return HttpResponse("")
 
 def training(request):
-    return render(request, "training/tina2.html")
+    return render(request, "training/training.html")
+
+def pictures(request):
+    return render(request, "training/pictures.html")
 
 def predict(request):
     if request.method == "POST":

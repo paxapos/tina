@@ -1,0 +1,117 @@
+ /*fuente*/
+@import url(https://fonts.googleapis.com/css?family=Lato:200,100|Lato);
+
+html {
+  font-family: 'FontAwesome', "Lato";
+  -ms-text-size-adjust:100%;  /*empareja el tamaño de la fuente en caso de usar una opcion de fuente no especificada*/
+  -webkit-text-size-adjust:100%;
+  background: linear-gradient(180deg, #353A40 0%, #16171B 100%);
+}
+
+
+h3{
+  color: #fff;
+  margin-left: 30%;
+  font-size: 25px;
+}
+
+p{
+  font-size: 23px;
+  color: #7F8489;
+  margin-bottom: 100px;
+  margin-left: 30%;
+}
+
+
+.titulo-tina{
+  font-style: normal;
+  font-weight: 700;
+  font-size: 40px;
+  line-height: 5px;
+  text-align: center;
+  padding-top: 50px;
+
+  color: #9555D3;
+}
+
+.subtitulo{
+  font-weight: 700;
+  font-size: 28px;
+  text-align: center;
+  padding-bottom: 80px;
+
+  color: #FFFFFF;
+}
+
+
+.contenedor{
+  display: flex; 
+  flex-direction: row;  
+  justify-content: center;
+}
+
+
+.input {
+  width: 150px;
+  height: 40px;
+  background: #212428;
+  filter: blur(0.5px);
+  box-shadow: inset -5px -5px 5px #2E3236, inset 5px 5px 10px #1A1818; 
+  border-radius: 10px;
+  margin-left:50px;
+  margin-right:50px;
+  margin-top:15px;
+  margin-bottom:80px;
+  text-align: center;
+  color: #fff;
+  font-size: 17px;
+}
+
+.label {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 16px;
+  margin-left:50px;
+  margin-right:94px;
+
+  color: #FFFFFF;
+  font-size: 18px;
+}
+
+.label2 {
+  font-style: normal;
+  font-weight: bold;
+  font-size: 16px;
+  margin-left:50px;
+  margin-right:50px;
+
+  color: #FFFFFF;
+  font-size: 18px;
+}
+
+
+.boton a {
+  width: 150px; 
+  height: 150px;
+  display: block;
+  border-radius: 50%;
+  /* line-height: 70px; */
+  color: #FFF;
+  text-decoration: none;
+  overflow: hidden;
+  text-align: center;
+  font-size: 2.2rem;
+
+  margin-top:50px;
+  margin-bottom: 20px;
+
+
+  background: linear-gradient(320.66deg, #411E63 14.75%, #9B49EC 84.81%);
+  filter: blur(0.5px);
+}
+
+.boton a::before {
+  content: "\f030";
+  display: block;
+  margin: 57px;
+}
