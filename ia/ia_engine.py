@@ -19,7 +19,12 @@ from keras.preprocessing.image import ImageDataGenerator
 from keras.callbacks import ModelCheckpoint, EarlyStopping
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.preprocessing.image import img_to_array, load_img
-from PIL import Image 
+from PIL import Image
+
+# Tengo que ubicarme en el directorio padre para poder acceder a tina.settings
+current_directory = os.path.dirname(os.path.abspath(__file__))
+parent_directory = os.path.dirname(current_directory)
+sys.path.append(parent_directory)
 from tina.settings import BASE_DIR, TRAINING_PICS_FOLDER, MODEL_PATH, EPOCHS_QUANTITY, VALIDATION_PERCENTAGE
 
 
@@ -28,7 +33,7 @@ IMG_HEIGHT = 140
 IMG_WIDTH = 99
 
 
-class IaEngine:
+class IaEngineBase:
 
 
    def __imageReader (self, productName: str):
@@ -46,111 +51,26 @@ class IaEngine:
       
       return train_dir, validation_dir
    
-   def __createModel (self):
+   def __createModel (self, resultsQuantity: int):
       '''
       This function creates the structure of the neural network
       and returns the model
       '''
+      sgd = tensorflow.keras.optimizers.SGD(learning_rate=0.01, momentum=0.9, nesterov=True)
 
-      # placeholder for input image
-      input_image = Input(shape=(IMG_HEIGHT, IMG_WIDTH,3))
-      # ============================================= TOP BRANCH ===================================================
-      # first top convolution layer
-      top_conv1 = Convolution2D(filters=48,kernel_size=(11,11),strides=(4,4),
-                                 input_shape=(IMG_HEIGHT,IMG_WIDTH,3),activation='relu')(input_image)
-      top_conv1 = BatchNormalization()(top_conv1)
-      top_conv1 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_conv1)
+      preTrainedModel = 'https://tfhub.dev/google/tf2-preview/mobilenet_v2/feature_vector/4'
+      mobilenetv2 = hub.KerasLayer(preTrainedModel, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3))
+      mobilenetv2.trainable = False
 
-      # second top convolution layer
-      # split feature map by half
-      top_top_conv2 = Lambda(lambda x : x[:,:,:,:24])(top_conv1)
-      top_bot_conv2 = Lambda(lambda x : x[:,:,:,24:])(top_conv1)
-
-      top_top_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_top_conv2)
-      top_top_conv2 = BatchNormalization()(top_top_conv2)
-      top_top_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_top_conv2)
-
-      top_bot_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_bot_conv2)
-      top_bot_conv2 = BatchNormalization()(top_bot_conv2)
-      top_bot_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_bot_conv2)
-
-      # third top convolution layer
-      # concat 2 feature map
-      top_conv3 = Concatenate()([top_top_conv2,top_bot_conv2])
-      top_conv3 = Convolution2D(filters=192,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_conv3)
-
-      # fourth top convolution layer
-      # split feature map by half
-      top_top_conv4 = Lambda(lambda x : x[:,:,:,:96])(top_conv3)
-      top_bot_conv4 = Lambda(lambda x : x[:,:,:,96:])(top_conv3)
-
-      top_top_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_top_conv4)
-      top_bot_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_bot_conv4)
-
-      # fifth top convolution layer
-      top_top_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_top_conv4)
-      top_top_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_top_conv5) 
-
-      top_bot_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(top_bot_conv4)
-      top_bot_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(top_bot_conv5)
-
-      # ============================================= TOP BOTTOM ===================================================
-      # first bottom convolution layer
-      bottom_conv1 = Convolution2D(filters=48,kernel_size=(11,11),strides=(4,4),
-                                 input_shape=(IMG_HEIGHT, IMG_WIDTH, 3),activation='relu')(input_image)
-      bottom_conv1 = BatchNormalization()(bottom_conv1)
-      bottom_conv1 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_conv1)
-
-      # second bottom convolution layer
-      # split feature map by half
-      bottom_top_conv2 = Lambda(lambda x : x[:,:,:,:24])(bottom_conv1)
-      bottom_bot_conv2 = Lambda(lambda x : x[:,:,:,24:])(bottom_conv1)
-
-      bottom_top_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_top_conv2)
-      bottom_top_conv2 = BatchNormalization()(bottom_top_conv2)
-      bottom_top_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_top_conv2)
-
-      bottom_bot_conv2 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_bot_conv2)
-      bottom_bot_conv2 = BatchNormalization()(bottom_bot_conv2)
-      bottom_bot_conv2 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_bot_conv2)
-
-      # third bottom convolution layer
-      # concat 2 feature map
-      bottom_conv3 = Concatenate()([bottom_top_conv2,bottom_bot_conv2])
-      bottom_conv3 = Convolution2D(filters=192,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_conv3)
-
-      # fourth bottom convolution layer
-      # split feature map by half
-      bottom_top_conv4 = Lambda(lambda x : x[:,:,:,:96])(bottom_conv3)
-      bottom_bot_conv4 = Lambda(lambda x : x[:,:,:,96:])(bottom_conv3)
-
-      bottom_top_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_top_conv4)
-      bottom_bot_conv4 = Convolution2D(filters=96,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_bot_conv4)
-
-      # fifth bottom convolution layer
-      bottom_top_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_top_conv4)
-      bottom_top_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_top_conv5) 
-
-      bottom_bot_conv5 = Convolution2D(filters=64,kernel_size=(3,3),strides=(1,1),activation='relu',padding='same')(bottom_bot_conv4)
-      bottom_bot_conv5 = MaxPooling2D(pool_size=(3,3),strides=(2,2))(bottom_bot_conv5)
-
-      # ======================================== CONCATENATE TOP AND BOTTOM BRANCH =================================
-      conv_output = Concatenate()([top_top_conv5,top_bot_conv5,bottom_top_conv5,bottom_bot_conv5])
-
-      # Flatten
-      flatten = Flatten()(conv_output)
-
-      # Fully-connected layer
-      FC_1 = Dense(units=4096, activation='relu')(flatten)
-      FC_1 = Dropout(0.6)(FC_1)
-      FC_2 = Dense(units=4096, activation='relu')(FC_1)
-      FC_2 = Dropout(0.6)(FC_2)
-      output = Dense(units=10, activation='softmax')(FC_2)
-      
-      model = Model(inputs=input_image,outputs=output)
-      #sgd = SGD(lr=1e-3, decay=1e-6, momentum=0.9, nesterov=True)
-      sgd = SGD(lr=0.01, momentum=0.9, decay=0.0005, nesterov=True)
-      model.compile(optimizer=sgd, loss='categorical_crossentropy', metrics=['accuracy'])
+      model = tensorflow.keras.Sequential([
+         mobilenetv2,
+         tensorflow.keras.layers.Dense(resultsQuantity, activation='softmax')
+      ])
+      model.compile(
+         optimizer=sgd, 
+         loss='categorical_crossentropy', 
+         metrics=['accuracy']
+      )
       return model
 
 
@@ -184,73 +104,6 @@ class IaEngine:
       hsv_image = cv2.cvtColor(img,cv2.COLOR_RGB2HSV)
       return Image.fromarray(hsv_image.astype(np.uint8))
 
-   def train(self, productName: str):
-      '''
-      This function creates a model for each product, trains it based on
-      the training and validation data and saves it in MODEL_PATH/productName
-      Args:
-         productName: a string with the name of the product with which the model will be trained and saved
-      '''
-      
-      train_dir, validation_dir = self.__imageReader(productName)
-      model = self.__createModel()
-
-      train_datagen = ImageDataGenerator(rescale=1./255, 
-         rotation_range=20, 
-         horizontal_flip=True, 
-         width_shift_range=0.2, 
-         height_shift_range=0.2, 
-         shear_range=0.2, 
-         zoom_range=0.2)
-      validation_datagen = ImageDataGenerator(rescale=1./255)
-
-      training_set = train_datagen.flow_from_directory(
-                  train_dir,
-                  target_size=(IMG_HEIGHT, IMG_WIDTH),
-                  class_mode='categorical')
-
-      validation_set = validation_datagen.flow_from_directory(
-                  validation_dir,
-                  target_size=(IMG_HEIGHT, IMG_WIDTH),
-                  class_mode='categorical')
-
-      history = model.fit(
-            training_set,
-            steps_per_epoch=4,
-            epochs=EPOCHS_QUANTITY,
-            validation_data=validation_set,
-            validation_steps=1,
-            )
-      model.summary()
-      model.save(MODEL_PATH +"/"+ productName + ".h5")
-
-
-      self.__accuracyGraph(history)
-      print (model.metrics_names)
-      print (model.evaluate(training_set, batch_size=10))
-      #self.__visualize_conv_layer('asd')
-      #plt.show()
-
-   def predict(self, product: str, img: str):
-      """
-      this function takes an image and sends it to the neural network model corresponding to the product to return its score
-         Args:
-            product: type of product to predict 
-            img: path to image to predict
-
-         Returns:
-            Numpy array(s) of predictions. Based on Keras Model.predict
-      """
-
-      loadimg = preprocessing.image.load_img( img, target_size=(IMG_HEIGHT, IMG_WIDTH) )
-      npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
-      
-      model = tensorflow.keras.models.load_model(MODEL_PATH +"/"+ product +".h5")
-      npimg = np.array(np.expand_dims(npimg, axis=0))
-      predict = model.predict( npimg )
-      return np.argmax(predict)
-
-
    def __accuracyGraph (self, history):
       '''
       This function generates a graphic of accuracy 
@@ -274,3 +127,157 @@ class IaEngine:
       plt.title('Training and validation loss')
 
       plt.show()
+
+class CookingIaEngine(IaEngineBase):
+
+
+   def train(self, productName: str):
+      '''
+      This function creates a model for each product, trains it based on
+      the training and validation data and saves it in MODEL_PATH/productName
+      Args:
+         productName: a string with the name of the product with which the model will be trained and saved
+      '''
+      
+      train_dir, validation_dir = self._IaEngineBase__imageReader(productName)
+      model = self._IaEngineBase__createModel(10)
+
+      train_datagen = ImageDataGenerator( 
+         rescale=1. / 255, 
+         rotation_range=20, 
+         horizontal_flip=True, 
+         width_shift_range=0.2, 
+         height_shift_range=0.2, 
+         shear_range=0.2, 
+         zoom_range=0.2
+      )
+      validation_datagen = ImageDataGenerator(rescale=1./255)
+
+      training_set = train_datagen.flow_from_directory(
+                  train_dir,
+                  target_size=(IMG_HEIGHT, IMG_WIDTH),
+                  class_mode='categorical')
+
+      validation_set = validation_datagen.flow_from_directory(
+                  validation_dir,
+                  target_size=(IMG_HEIGHT, IMG_WIDTH),
+                  class_mode='categorical')
+
+      history = model.fit(
+            training_set,
+            steps_per_epoch=4,
+            epochs=EPOCHS_QUANTITY,
+            validation_data=validation_set,
+            validation_steps=1,
+            )
+      model.summary()
+      model.save(MODEL_PATH + "/" + productName + ".h5")
+
+
+      self._IaEngineBase__accuracyGraph(history)
+      print (model.metrics_names)
+      print (model.evaluate(training_set, batch_size=10))
+      #self.__visualize_conv_layer('asd')
+      #plt.show()
+   
+
+   def predict(self, product: str, img: str):
+      """
+      this function takes an image and sends it to the neural network model corresponding to the product to return its score
+         Args:
+            product: type of product to predict 
+            img: path to image to predict
+
+         Returns:
+            Numpy array(s) of predictions. Based on Keras Model.predict
+      """
+
+      loadimg = preprocessing.image.load_img( img, target_size=(IMG_HEIGHT, IMG_WIDTH) )
+      npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
+      
+      preTrainedModel = 'https://tfhub.dev/google/tf2-preview/mobilenet_v2/feature_vector/4'
+      model = load_model(MODEL_PATH + "/" + product + ".h5", custom_objects={'KerasLayer': hub.KerasLayer(preTrainedModel)})
+
+      npimg = np.array(npimg).astype(float)/255
+      npimg = cv2.resize(npimg, (IMG_HEIGHT, IMG_WIDTH))
+
+      predict = model.predict( npimg.reshape(-1, IMG_HEIGHT, IMG_WIDTH, 3) )
+      return np.argmax(predict[0], axis=-1)
+
+
+class CookingIaEngine(IaEngineBase):
+   def __init__(self, lista_nombreProductos):
+      self.lista_nombreProductos = lista_nombreProductos
+
+
+   def train(self):
+      '''
+      This function creates a model for recognizing the products, trains it based 
+      on the training and validation data and saves it in MODEL_PATH/foods
+      '''
+      
+      train_dir, validation_dir = self._IaEngineBase__imageReader(productName)
+      
+      cantProductos = len(self.lista_nombreProductos)
+      model = self._IaEngineBase__createModel(cantProductos)
+
+      train_datagen = ImageDataGenerator( 
+         rescale=1. / 255, 
+         rotation_range=20, 
+         horizontal_flip=True, 
+         width_shift_range=0.2, 
+         height_shift_range=0.2, 
+         shear_range=0.2, 
+         zoom_range=0.2
+      )
+      validation_datagen = ImageDataGenerator(rescale=1./255)
+
+      training_set = train_datagen.flow_from_directory(
+                  train_dir,
+                  target_size=(IMG_HEIGHT, IMG_WIDTH),
+                  class_mode='categorical')
+
+      validation_set = validation_datagen.flow_from_directory(
+                  validation_dir,
+                  target_size=(IMG_HEIGHT, IMG_WIDTH),
+                  class_mode='categorical')
+
+      history = model.fit(
+            training_set,
+            steps_per_epoch=4,
+            epochs=EPOCHS_QUANTITY,
+            validation_data=validation_set,
+            validation_steps=1,
+            )
+      model.summary()
+      model.save(MODEL_PATH + "/foods.h5")
+
+
+      self._IaEngineBase__accuracyGraph(history)
+      print (model.metrics_names)
+      print (model.evaluate(training_set, batch_size=10))
+      #self.__visualize_conv_layer('asd')
+      #plt.show()
+   
+
+   def predict(self, img: str):
+      """
+         this function takes an image and sends it to the neural network model to return its name
+            Args:
+               img: path to image to predict
+
+            Returns:
+               Name of the product.      
+      """
+
+      loadimg = preprocessing.image.load_img( img, target_size=(IMG_HEIGHT, IMG_WIDTH) )
+      npimg = preprocessing.image.img_to_array(loadimg, data_format=None, dtype=None)
+      
+      preTrainedModel = 'https://tfhub.dev/google/tf2-preview/mobilenet_v2/feature_vector/4'
+      model = load_model(MODEL_PATH + "/foods.h5", custom_objects={'KerasLayer': hub.KerasLayer(preTrainedModel)})
+
+      npimg = np.array(npimg).astype(float)/255
+      npimg = cv2.resize(npimg, (IMG_HEIGHT, IMG_WIDTH))
+
+      predict = model.predict( npimg.reshape(-1, IMG_HEIGHT, IMG_WIDTH, 3) )
+      return np.argmax(predict[0], axis=-1)
